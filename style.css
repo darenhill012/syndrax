@@ -244,16 +244,29 @@ button {
 }
 
 .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     font-size: 1.5rem;
     font-weight: 800;
     letter-spacing: 3px;
     color: var(--text-primary);
     transition: var(--transition);
 }
-
-.logo:hover {
-    color: var(--accent-blue);
+.logo-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: var(--accent-blue);
+    border-radius: 8px;
+    font-size: 1.2rem;
+    font-weight: 800;
+    box-shadow: 0 0 20px var(--accent-blue-glow);
 }
+.logo:hover { color: var(--accent-blue); }
+.logo:hover .logo-icon { box-shadow: 0 0 30px var(--accent-blue-glow); }
 
 .nav-links {
     display: flex;
@@ -433,6 +446,108 @@ button {
     justify-content: center;
     flex-wrap: wrap;
 }
+
+/* Hero Background Image */
+.hero-bg {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    z-index: 0;
+}
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(10, 15, 30, 0.85);
+    z-index: 1;
+}
+.hero-content { z-index: 2; }
+
+/* Typing Animation */
+.typing-text { display: inline; }
+.cursor {
+    display: inline-block;
+    color: var(--accent-blue);
+    animation: blink 0.8s infinite;
+    font-weight: 300;
+}
+@keyframes blink { 0%,50% { opacity: 1; } 51%,100% { opacity: 0; } }
+
+/* Dropdown */
+.has-dropdown { position: relative; }
+.dropdown {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    background: rgba(15, 23, 42, 0.98);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 12px 0;
+    min-width: 160px;
+    opacity: 0;
+    visibility: hidden;
+    transition: var(--transition);
+}
+.has-dropdown:hover .dropdown { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
+.dropdown li { border: none !important; }
+.dropdown a { padding: 10px 20px !important; font-size: 0.85rem !important; display: block; }
+.dropdown a:hover { background: var(--bg-glass); }
+
+/* Gridwatch Section */
+.gridwatch-section { background: var(--bg-secondary); }
+.gridwatch-card {
+    padding: 60px;
+    text-align: center;
+    border-color: var(--accent-cyan) !important;
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.05), transparent) !important;
+}
+.opensource-badge {
+    display: inline-block;
+    background: var(--accent-cyan);
+    color: var(--bg-primary);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    padding: 8px 16px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+.gridwatch-card h2 { font-size: 2.5rem; font-weight: 800; margin-bottom: 12px; color: var(--text-primary); }
+.gridwatch-tagline { font-size: 1.15rem; color: var(--accent-cyan); font-weight: 600; margin-bottom: 24px; }
+.gridwatch-desc { font-size: 1rem; color: var(--text-secondary); line-height: 1.8; max-width: 800px; margin: 0 auto 30px; }
+.feature-pills { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 30px; }
+.pill {
+    padding: 10px 20px;
+    background: rgba(6, 182, 212, 0.15);
+    border: 1px solid var(--accent-cyan);
+    border-radius: 30px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--accent-cyan);
+}
+.gridwatch-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+.btn-github {
+    background: #24292f;
+    color: #fff;
+    border: 1px solid #444;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.btn-github svg { width: 18px; height: 18px; }
+.btn-github:hover { background: #333; }
+.btn-outline-cyan {
+    background: transparent;
+    color: var(--accent-cyan);
+    border: 1px solid var(--accent-cyan);
+}
+.btn-outline-cyan:hover { background: var(--accent-cyan); color: var(--bg-primary); }
+
+/* Footer Logo Icon */
+.footer-logo { display: flex; align-items: center; gap: 10px; justify-content: center; }
+.footer-logo .logo-icon { width: 32px; height: 32px; font-size: 1rem; }
+@media (min-width: 769px) { .footer-logo { justify-content: flex-start; } }
 
 /* =============================================
    Page Hero (Inner Pages)

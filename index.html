@@ -3,27 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Syndrax LLC - Enterprise Technology. Engineered for Scale.</title>
-    <meta name="description" content="Cloud infrastructure, cybersecurity, and managed services built for the modern enterprise. Syndrax LLC delivers enterprise-grade technology solutions.">
+    <title>⚡ Syndrax LLC — Enterprise Technology</title>
+    <meta name="description" content="Cloud infrastructure, cybersecurity, and managed services built for the modern enterprise.">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%233b82f6'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-family='Inter,sans-serif' font-weight='800' font-size='20' fill='white'%3ES%3C/text%3E%3C/svg%3E">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Navigation -->
     <nav class="navbar" id="navbar">
         <div class="nav-container">
-            <a href="index.html" class="logo">SYNDRAX</a>
+            <a href="index.html" class="logo">
+                <span class="logo-icon">S</span>
+                <span class="logo-text">SYNDRAX</span>
+            </a>
             <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle menu">
-                <span></span>
-                <span></span>
-                <span></span>
+                <span></span><span></span><span></span>
             </button>
             <ul class="nav-links" id="navLinks">
                 <li><a href="services.html">Services</a></li>
                 <li><a href="solutions.html">Solutions</a></li>
-                <li><a href="products.html">Products</a></li>
+                <li class="has-dropdown">
+                    <a href="products.html">Products</a>
+                    <ul class="dropdown">
+                        <li><a href="products.html">All Products</a></li>
+                        <li><a href="gridwatch.html">Gridwatch</a></li>
+                    </ul>
+                </li>
                 <li><a href="about.html">About</a></li>
                 <li><a href="careers.html">Careers</a></li>
                 <li><a href="contact.html" class="nav-cta">Contact</a></li>
@@ -31,22 +38,19 @@
         </div>
     </nav>
 
-    <!-- Hero Section -->
     <section class="hero hero-home" id="hero">
-        <div class="hero-bg-animation"></div>
+        <div class="hero-bg" style="background-image: url('https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1920')"></div>
+        <div class="hero-overlay"></div>
         <div class="hero-content">
-            <h1 class="hero-title">Enterprise Technology.<br><span class="gradient-text">Engineered for Scale.</span></h1>
+            <h1 class="hero-title"><span class="typing-text" id="typingText"></span><span class="cursor">|</span></h1>
             <p class="hero-subtitle">Cloud infrastructure, cybersecurity, and managed services built for the modern enterprise.</p>
             <div class="hero-buttons">
                 <a href="services.html" class="btn btn-primary">Our Services</a>
                 <a href="contact.html" class="btn btn-outline">Get in Touch</a>
             </div>
         </div>
-        <div class="hero-gradient-orb"></div>
-        <div class="hero-gradient-orb secondary"></div>
     </section>
 
-    <!-- Services Overview Section -->
     <section class="section services-overview" id="services">
         <div class="container">
             <div class="section-header">
@@ -55,74 +59,39 @@
             </div>
             <div class="services-grid">
                 <div class="service-card glass-card fade-in">
-                    <div class="service-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
-                        </svg>
-                    </div>
+                    <div class="service-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg></div>
                     <h3>Cloud & Infrastructure</h3>
                     <p>Scalable cloud architecture and infrastructure engineering for enterprise performance and reliability.</p>
                 </div>
                 <div class="service-card glass-card fade-in">
-                    <div class="service-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                        </svg>
-                    </div>
+                    <div class="service-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
                     <h3>Cybersecurity & SOC</h3>
                     <p>24/7 security operations, threat monitoring, and incident response to protect your critical assets.</p>
                 </div>
                 <div class="service-card glass-card fade-in">
-                    <div class="service-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-                            <line x1="8" y1="21" x2="16" y2="21"/>
-                            <line x1="12" y1="17" x2="12" y2="21"/>
-                        </svg>
-                    </div>
+                    <div class="service-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
                     <h3>Managed IT Services</h3>
                     <p>End-to-end IT management, support, and optimization for seamless business operations.</p>
                 </div>
                 <div class="service-card glass-card fade-in">
-                    <div class="service-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
-                            <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
-                            <line x1="6" y1="6" x2="6.01" y2="6"/>
-                            <line x1="6" y1="18" x2="6.01" y2="18"/>
-                        </svg>
-                    </div>
+                    <div class="service-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg></div>
                     <h3>Network Engineering</h3>
                     <p>Enterprise-grade network architecture, optimization, and management for maximum uptime.</p>
                 </div>
                 <div class="service-card glass-card fade-in">
-                    <div class="service-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="16 18 22 12 16 6"/>
-                            <polyline points="8 6 2 12 8 18"/>
-                        </svg>
-                    </div>
+                    <div class="service-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div>
                     <h3>Software Development</h3>
                     <p>Custom software solutions and application development tailored to your business requirements.</p>
                 </div>
                 <div class="service-card glass-card fade-in">
-                    <div class="service-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="3"/>
-                            <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
-                        </svg>
-                    </div>
+                    <div class="service-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4"/></svg></div>
                     <h3>R&D & Contracting</h3>
                     <p>Innovative research initiatives and specialized technology contracting for complex projects.</p>
                 </div>
             </div>
-            <div class="section-cta">
-                <a href="services.html" class="btn btn-secondary">Explore All Services</a>
-            </div>
         </div>
     </section>
 
-    <!-- Why Syndrax Section -->
     <section class="section why-syndrax">
         <div class="container">
             <div class="section-header">
@@ -131,39 +100,24 @@
             </div>
             <div class="features-grid">
                 <div class="feature-card fade-in">
-                    <div class="feature-icon glow-blue">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                        </svg>
-                    </div>
+                    <div class="feature-icon glow-blue"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
                     <h3>Innovation</h3>
-                    <p>We stay at the forefront of emerging technologies, continuously researching and implementing cutting-edge solutions that give your business a competitive edge.</p>
+                    <p>We stay at the forefront of emerging technologies, continuously researching and implementing cutting-edge solutions.</p>
                 </div>
                 <div class="feature-card fade-in">
-                    <div class="feature-icon glow-cyan">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                            <polyline points="22 4 12 14.01 9 11.01"/>
-                        </svg>
-                    </div>
+                    <div class="feature-icon glow-cyan"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
                     <h3>Reliability</h3>
-                    <p>Our infrastructure and services are engineered for maximum uptime and performance. We build systems that your business can depend on, day after day.</p>
+                    <p>Our infrastructure and services are engineered for maximum uptime and performance you can depend on.</p>
                 </div>
                 <div class="feature-card fade-in">
-                    <div class="feature-icon glow-blue">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
-                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                        </svg>
-                    </div>
+                    <div class="feature-icon glow-blue"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
                     <h3>Security</h3>
-                    <p>Security is embedded in everything we do. From SOC operations to secure development practices, we protect your assets against evolving threats.</p>
+                    <p>Security is embedded in everything we do, protecting your assets against evolving threats.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Products Teaser Section -->
     <section class="section products-teaser">
         <div class="container">
             <div class="section-header">
@@ -173,14 +127,10 @@
             <div class="product-showcase glass-card fade-in">
                 <div class="product-badge">In Development</div>
                 <div class="product-content">
-                    <div class="product-icon-large">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H3m9 9a9 9 0 0 1-9-9m9 9c1.66 0 3-4.03 3-9s-1.34-9-3-9m0 18c-1.66 0-3-4.03-3-9s1.34-9 3-9m-9 9a9 9 0 0 1 9-9"/>
-                        </svg>
-                    </div>
+                    <div class="product-icon-large"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H3m9 9a9 9 0 0 1-9-9m9 9c1.66 0 3-4.03 3-9s-1.34-9-3-9m0 18c-1.66 0-3-4.03-3-9s1.34-9 3-9"/></svg></div>
                     <div class="product-info">
                         <h3>Syndrax Sync</h3>
-                        <p>Intelligent inventory synchronization across eBay, Amazon, and AliExpress. Built for modern resellers who need real-time inventory management across multiple platforms.</p>
+                        <p>Intelligent inventory synchronization across eBay, Amazon, and AliExpress. Built for modern resellers who need real-time inventory management.</p>
                         <a href="products.html" class="btn btn-outline">Learn More</a>
                     </div>
                 </div>
@@ -188,7 +138,25 @@
         </div>
     </section>
 
-    <!-- CTA Banner -->
+    <section class="section gridwatch-section">
+        <div class="container">
+            <div class="gridwatch-card glass-card fade-in">
+                <span class="opensource-badge">OPEN SOURCE</span>
+                <h2>Introducing Gridwatch</h2>
+                <p class="gridwatch-tagline">Enterprise network monitoring. Free for nonprofits, churches, and community organizations.</p>
+                <p class="gridwatch-desc">Gridwatch is Syndrax's open source network monitoring and infrastructure visibility platform. Built for organizations that need enterprise-grade visibility without enterprise-grade cost. We believe every organization deserves reliable technology — which is why Gridwatch is free to install for qualifying nonprofits, churches, and charitable organizations.</p>
+                <div class="feature-pills">
+                    <span class="pill">Free Installation for Nonprofits</span>
+                    <span class="pill">Open Source on GitHub</span>
+                </div>
+                <div class="gridwatch-buttons">
+                    <a href="https://github.com/syndrax/gridwatch" target="_blank" class="btn btn-github"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg> GitHub</a>
+                    <a href="gridwatch.html" class="btn btn-outline-cyan">Learn More</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <section class="cta-banner">
         <div class="container">
             <div class="cta-content">
@@ -199,45 +167,36 @@
         </div>
     </section>
 
-    <!-- Footer -->
     <footer class="footer">
         <div class="container">
             <div class="footer-grid">
                 <div class="footer-brand">
-                    <a href="index.html" class="footer-logo">SYNDRAX</a>
+                    <a href="index.html" class="footer-logo"><span class="logo-icon">S</span><span>SYNDRAX</span></a>
                     <p>Enterprise technology solutions engineered for scale, security, and performance.</p>
                 </div>
                 <div class="footer-links">
                     <h4>Company</h4>
-                    <ul>
-                        <li><a href="about.html">About Us</a></li>
-                        <li><a href="careers.html">Careers</a></li>
-                        <li><a href="contact.html">Contact</a></li>
-                    </ul>
+                    <ul><li><a href="about.html">About Us</a></li><li><a href="careers.html">Careers</a></li><li><a href="contact.html">Contact</a></li></ul>
                 </div>
                 <div class="footer-links">
                     <h4>Services</h4>
-                    <ul>
-                        <li><a href="services.html">All Services</a></li>
-                        <li><a href="solutions.html">Solutions</a></li>
-                        <li><a href="products.html">Products</a></li>
-                    </ul>
+                    <ul><li><a href="services.html">All Services</a></li><li><a href="solutions.html">Solutions</a></li><li><a href="products.html">Products</a></li></ul>
                 </div>
                 <div class="footer-links">
                     <h4>Connect</h4>
                     <ul>
                         <li><a href="mailto:hello@syndrax.io">hello@syndrax.io</a></li>
-                        <li><span>Pacific Northwest</span></li>
+                        <li><span>Headquarters: Wyoming USA</span></li>
+                        <li><span>Offices: Portland OR — Seattle WA</span></li>
                     </ul>
                 </div>
             </div>
             <div class="footer-bottom">
+                <p>Licensed in Wyoming • Operating in the Pacific Northwest</p>
                 <p>&copy; Syndrax LLC 2026. All rights reserved.</p>
-                <a href="https://syndrax.io" target="_blank" rel="noopener">syndrax.io</a>
             </div>
         </div>
     </footer>
-
     <script src="script.js"></script>
 </body>
 </html>
