@@ -10,6 +10,5 @@
     { "source": "/about", "destination": "/about.html" },
     { "source": "/careers", "destination": "/careers.html" },
     { "source": "/contact", "destination": "/contact.html" },
-    { "source": "/gridwatch", "destination": "/gridwatch.html" }
   ]
 }
