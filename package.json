@@ -1,0 +1,8 @@
+{
+  "name": "syndrax-site",
+  "version": "1.0.0",
+  "description": "Syndrax LLC website",
+  "scripts": {
+    "build": "echo 'Static site — no build step required'"
+  }
+}

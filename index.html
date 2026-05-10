@@ -43,25 +43,44 @@
   <a href="/gridwatch">Gridwatch</a>
   <a href="/about">About</a>
   <a href="/careers">Careers</a>
-  <a href="/contact" class="nav-cta" style="text-align:center;border-radius:8px;background:var(--green);color:white;padding:11px 0;">Get in Touch</a>
+  <a href="/contact" class="nav-cta" style="text-align:center;border-radius:8px;padding:11px 0;">Get in Touch</a>
 </div>
+
+<!-- SVG Gradient Def for Icons -->
+<svg width="0" height="0" style="position:absolute;">
+  <defs>
+    <linearGradient id="iconGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00CFFF"/>
+      <stop offset="50%" stop-color="#7A5CFF"/>
+      <stop offset="100%" stop-color="#FF00D4"/>
+    </linearGradient>
+  </defs>
+</svg>
 
 <!-- HERO -->
 <section class="hero">
-  <div class="hero-bg">
-    <img src="https://images.pexels.com/photos/1148820/pexels-photo-1148820.jpeg?auto=compress&cs=tinysrgb&w=1920" alt="">
-  </div>
   <div class="hero-glow"></div>
   <div class="hero-grid"></div>
   <div class="hero-content">
-    <div class="hero-badge">Cloud &bull; Cybersecurity &bull; Automation</div>
+    <div class="hero-sphere">
+      <div class="particle" style="width:5px;height:5px;background:#00CFFF;--orbit-r:150px;animation-duration:4s;"></div>
+      <div class="particle" style="width:4px;height:4px;background:#7A5CFF;--orbit-r:160px;animation-duration:5s;"></div>
+      <div class="particle" style="width:6px;height:6px;background:#FF00D4;--orbit-r:170px;animation-duration:6s;"></div>
+      <div class="particle" style="width:4px;height:4px;background:#35E0FF;--orbit-r:145px;animation-duration:3.5s;"></div>
+      <div class="particle" style="width:5px;height:5px;background:#7A5CFF;--orbit-r:180px;animation-duration:7s;"></div>
+      <div class="particle" style="width:4px;height:4px;background:#FF3DFF;--orbit-r:155px;animation-duration:4.5s;"></div>
+      <div class="particle" style="width:6px;height:6px;background:#00CFFF;--orbit-r:190px;animation-duration:8s;"></div>
+      <div class="particle" style="width:5px;height:5px;background:#FF00D4;--orbit-r:165px;animation-duration:5.5s;"></div>
+      <div class="particle" style="width:4px;height:4px;background:#35E0FF;--orbit-r:175px;animation-duration:6.5s;"></div>
+      <div class="particle" style="width:5px;height:5px;background:#7A5CFF;--orbit-r:195px;animation-duration:7.5s;"></div>
+      <div class="particle" style="width:6px;height:6px;background:#00CFFF;--orbit-r:140px;animation-duration:3s;"></div>
+      <div class="particle" style="width:4px;height:4px;background:#FF00D4;--orbit-r:200px;animation-duration:8s;"></div>
+    </div>
+    <div class="hero-badge"><span>Cloud &bull; Cybersecurity &bull; Automation</span></div>
     <h1>Built for Operations<br><span class="accent">That Can't Afford to Fail.</span></h1>
     <p class="hero-sub">Cloud infrastructure, cybersecurity, and managed services engineered for scale, security, and performance.</p>
     <div class="btn-row">
-      <a href="/services" class="btn btn-primary btn-lg">
-        <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        Explore Services
-      </a>
+      <a href="/services" class="btn btn-primary btn-lg">Explore Services</a>
       <a href="/contact" class="btn btn-secondary btn-lg">Get in Touch</a>
     </div>
   </div>
