@@ -3,49 +3,37 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Contact — Syndrax Technologies</title>
-  <meta name="description" content="Get in touch with Syndrax LLC. Contact us for cloud infrastructure, cybersecurity, managed IT services, and software development inquiries.">
+  <title>Contact — Syndrax Sync</title>
+  <meta name="description" content="Get in touch with Syndrax Sync. Sales, support, enterprise inquiries, and partnerships.">
   <link rel="icon" type="image/png" href="assets/images/synball.png">
-  <link rel="stylesheet" href="style.css?v=2">
+  <link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
 
 <nav class="navbar" id="navbar">
   <div class="nav-inner">
-    <a href="/" class="nav-logo">
-      <img src="assets/images/logo.png" alt="Syndrax" class="nav-logo-img">
-    </a>
-    <button class="hamburger" id="hamburger" aria-label="Menu">
-      <span></span><span></span><span></span>
-    </button>
+    <a href="/" class="nav-logo"><img src="assets/images/logo.png" alt="Syndrax Sync" class="nav-logo-img"></a>
+    <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
     <div class="nav-links">
-      <a href="/services">Services</a>
-      <a href="/solutions">Solutions</a>
-      <div class="nav-dropdown">
-        <a href="/products">Products</a>
-        <div class="nav-dropdown-menu">
-          <a href="/products">All Products</a>
-          <a href="/gridwatch">Gridwatch</a>
-        </div>
-      </div>
+      <a href="/features">Features</a>
+      <a href="/pricing">Pricing</a>
+      <a href="/enterprise">Enterprise</a>
       <a href="/about">About</a>
       <a href="/careers">Careers</a>
-      <a href="/contact" class="nav-cta active">Get in Touch</a>
+      <a href="/contact" class="nav-cta">Start Free Trial</a>
     </div>
   </div>
 </nav>
 
 <div class="mobile-menu" id="mobileMenu">
-  <a href="/services">Services</a>
-  <a href="/solutions">Solutions</a>
-  <a href="/products">Products</a>
-  <a href="/gridwatch">Gridwatch</a>
+  <a href="/features">Features</a>
+  <a href="/pricing">Pricing</a>
+  <a href="/enterprise">Enterprise</a>
   <a href="/about">About</a>
   <a href="/careers">Careers</a>
-  <a href="/contact" style="text-align:center;border-radius:8px;padding:11px 0;">Get in Touch</a>
+  <a href="/contact" style="text-align:center;border-radius:8px;padding:11px 0;">Start Free Trial</a>
 </div>
 
-<!-- SVG Gradient Def for Icons -->
 <svg width="0" height="0" style="position:absolute;">
   <defs>
     <linearGradient id="iconGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -61,7 +49,7 @@
   <div class="page-hero-content">
     <div class="section-badge">Contact</div>
     <h1>Get In <span class="accent">Touch</span></h1>
-    <p>Let's discuss how we can help with your technology needs. We respond within 24-48 hours.</p>
+    <p>Have a question about the platform, pricing, or enterprise solutions? We respond within 24 hours.</p>
   </div>
 </section>
 
@@ -78,7 +66,7 @@
           </div>
         </div>
         <h2>Send Us a Message</h2>
-        <form id="contactForm" action="mailto:hr@syndrax.io" method="post" enctype="text/plain">
+        <form id="contactForm" action="mailto:hello@syndrax.io" method="post" enctype="text/plain">
           <div class="form-row">
             <div class="form-group">
               <label for="name">Name <span class="form-req">*</span></label>
@@ -96,21 +84,18 @@
           <div class="form-group">
             <label for="service">Service Interest</label>
             <select id="service" name="service">
-              <option value="">Select a service...</option>
-              <option value="cloud">Cloud &amp; Infrastructure</option>
-              <option value="security">Cybersecurity &amp; SOC</option>
-              <option value="managed-it">Managed IT Services</option>
-              <option value="network">Network Engineering</option>
-              <option value="software">Software Development</option>
-              <option value="rnd">R&amp;D &amp; Contracting</option>
-              <option value="products">Products</option>
-              <option value="careers">Career Opportunities</option>
+              <option value="">Select an option...</option>
+              <option value="sales-demo">Sales / Product Demo</option>
+              <option value="support">Platform Support</option>
+              <option value="enterprise">Enterprise Solutions</option>
+              <option value="partnership">Partnership / Integration</option>
+              <option value="careers">Careers</option>
               <option value="other">Other</option>
             </select>
           </div>
           <div class="form-group">
             <label for="message">Message <span class="form-req">*</span></label>
-            <textarea id="message" name="message" required placeholder="Tell us about your project or inquiry..."></textarea>
+            <textarea id="message" name="message" required placeholder="Tell us what you're looking for..."></textarea>
           </div>
           <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">
             <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
@@ -128,7 +113,7 @@
             </div>
             <div>
               <h4>Email</h4>
-              <a href="mailto:hr@syndrax.io">hr@syndrax.io</a>
+              <a href="mailto:hello@syndrax.io">hello@syndrax.io</a>
             </div>
           </div>
           <div class="contact-item">
@@ -149,15 +134,6 @@
               <p>Wyoming, USA</p>
             </div>
           </div>
-          <div class="contact-item">
-            <div class="contact-item-icon">
-              <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            </div>
-            <div>
-              <h4>Operations</h4>
-              <p>Portland, OR &mdash; Seattle, WA</p>
-            </div>
-          </div>
         </div>
 
         <div class="contact-info-card">
@@ -165,23 +141,23 @@
           <div class="expect-list">
             <div class="expect-item">
               <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-              Response within 24-48 hours
+              Response within 24 hours
             </div>
             <div class="expect-item">
               <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-              No obligation consultation
+              No-obligation product demo
             </div>
             <div class="expect-item">
               <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-              Clear and transparent pricing
+              Transparent, straightforward pricing
             </div>
             <div class="expect-item">
               <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-              Technical expertise, not sales pitches
+              Direct access to the team — not a call center
             </div>
             <div class="expect-item">
               <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-              Tailored recommendations for your needs
+              Tailored recommendations for your operation
             </div>
           </div>
         </div>
@@ -194,39 +170,34 @@
 <footer>
   <div class="footer-inner">
     <div class="footer-brand">
-      <a href="/" class="footer-logo">
-        <img src="assets/images/logo.png" alt="Syndrax" class="footer-logo-img">
-      </a>
-      <p>Enterprise technology solutions engineered for scale, security, and performance.</p>
+      <a href="/" class="footer-logo"><img src="assets/images/logo.png" alt="Syndrax Sync" class="footer-logo-img"></a>
+      <p>The operating system for e-commerce sellers.</p>
     </div>
     <div class="footer-col">
       <h4>Company</h4>
-      <a href="/about">About Us</a>
+      <a href="/about">About</a>
       <a href="/careers">Careers</a>
       <a href="/contact">Contact</a>
     </div>
     <div class="footer-col">
-      <h4>Services</h4>
-      <a href="/services">All Services</a>
-      <a href="/solutions">Solutions</a>
-      <a href="/products">Products</a>
-      <a href="/gridwatch">Gridwatch</a>
+      <h4>Product</h4>
+      <a href="/features">Features</a>
+      <a href="/pricing">Pricing</a>
+      <a href="/enterprise">Enterprise</a>
     </div>
     <div class="footer-col">
-      <h4>Contact</h4>
-      <a href="mailto:hr@syndrax.io">hr@syndrax.io</a>
+      <h4>Support</h4>
+      <a href="mailto:hello@syndrax.io">hello@syndrax.io</a>
       <a href="tel:+15642229983">(564) 222-9983</a>
-      <span>HQ: Wyoming, USA</span>
-      <span>Portland, OR</span>
-      <span>Seattle, WA</span>
+      <span>Wyoming, USA</span>
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© Syndrax LLC. All rights reserved. Licensed in Wyoming &mdash; Operating in the Pacific Northwest</span>
+    <span>© Syndrax LLC. All rights reserved.</span>
     <a href="https://syndrax.io" target="_blank" rel="noopener">syndrax.io</a>
   </div>
 </footer>
 
-<script src="script.js?v=2"></script>
+<script src="script.js?v=3"></script>
 </body>
 </html>

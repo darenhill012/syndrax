@@ -4,13 +4,12 @@
   "trailingSlash": false,
   "outputDirectory": ".",
   "rewrites": [
-    { "source": "/services", "destination": "/services.html" },
-    { "source": "/solutions", "destination": "/solutions.html" },
-    { "source": "/products", "destination": "/products.html" },
+    { "source": "/features", "destination": "/features.html" },
+    { "source": "/pricing", "destination": "/pricing.html" },
+    { "source": "/enterprise", "destination": "/enterprise.html" },
     { "source": "/about", "destination": "/about.html" },
     { "source": "/careers", "destination": "/careers.html" },
-    { "source": "/contact", "destination": "/contact.html" },
-    { "source": "/gridwatch", "destination": "/gridwatch.html" }
+    { "source": "/contact", "destination": "/contact.html" }
   ],
   "headers": [
     {
