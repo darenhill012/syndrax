@@ -1500,22 +1500,14 @@ html:not(.dark) .hero-dash-footer { border-top-color: rgba(15,23,42,0.07); }
   }
 }
 
+/* At 768px and below, fully override the 1024px min-height clamps */
+@media (max-width: 768px) {
+  .hero-right        { min-height: auto !important; }
+  .hero-visual-cluster { min-height: auto !important; }
+}
+
 @media (max-width: 640px) {
-  .hero-node { display: none !important; }
-  .hero-orb-lines { display: none; }
-  .hero-dash {
-    position: relative;
-    left: auto;
-    top: auto;
-    transform: none;
-    animation: none;
-    margin: 0 auto;
-    width: 100%;
-    max-width: 360px;
-  }
-  @keyframes heroDashFloat {
-    0%, 100% { transform: none; }
-  }
+  /* All hero mobile overrides handled in 768px block above */
 }
 
 /* Reduced motion */
@@ -3685,75 +3677,116 @@ footer {
   .nav-right { display: none; }
   .hamburger { display: flex; }
   .nav-inner { grid-template-columns: 1fr auto; }
+
+  /* ---- Hero section: contained, no overflow ---- */
   .hero {
-    padding: 96px 0 56px;
+    padding: 96px 0 64px;
     min-height: auto;
-    overflow: visible;
+    overflow: clip;
   }
   .hero h1 {
-    font-size: clamp(40px, 11vw, 60px);
+    font-size: clamp(38px, 10vw, 56px);
     letter-spacing: -2px;
-    line-height: 1;
-    margin-bottom: 20px;
+    line-height: 1.02;
+    margin-bottom: 16px;
   }
   .hero-content {
     grid-template-columns: 1fr;
-    gap: 32px;
+    gap: 0;
     padding: 0 20px;
   }
+
+  /* Left column: centered, in normal flow */
   .hero-left {
     align-items: center;
     text-align: center;
     order: 1;
   }
-  .hero-left .hero-badge { margin-bottom: 20px; }
+  .hero-left .hero-badge { margin-bottom: 18px; }
   .hero-left h1 { text-align: center; }
   .hero-left .hero-sub {
     text-align: center;
-    max-width: 90%;
-    margin: 0 0 28px;
+    max-width: 92%;
+    margin: 0 auto 24px;
     font-size: 15px;
   }
-  .hero-left .btn-row { justify-content: center; }
-  .hero-right {
+  .hero-left .btn-row {
     justify-content: center;
-    order: 2;
-    min-height: auto;
+    margin-bottom: 28px;
   }
-  /* Simplified mobile: just the card, orb hidden */
-  .hero-visual-cluster {
-    min-height: auto;
-    padding-bottom: 24px;
-  }
-  .hero-dash {
-    position: relative;
-    left: auto;
-    top: auto;
-    transform: none;
-    width: 100%;
-    max-width: 420px;
-    margin: 0 auto;
-    animation: none;
-  }
-  .hero-callout { display: none; }
-  .hero-orb-lines { display: none; }
-  .hero-orb-bg { display: none; }
   .hero-integrations {
     justify-content: center;
-    gap: 10px;
+    gap: 8px;
+    margin-top: 0;
+    margin-bottom: 0;
   }
   .hero-int-icons { gap: 0; flex-wrap: wrap; justify-content: center; }
   .hero-int-icon img { width: 24px; height: 24px; }
+
+  /* Right column: collapses to natural height, sits below left */
+  .hero-right {
+    order: 2;
+    justify-content: center;
+    min-height: auto !important;
+    margin-top: 28px;
+  }
+
+  /* Visual cluster: natural height, no absolute expansion */
+  .hero-visual-cluster {
+    position: relative;
+    min-height: auto !important;
+    height: auto;
+    width: 100%;
+    padding-bottom: 0;
+  }
+
+  /* Orb system: switch to normal flow so it wraps around the card */
+  .hero-orb-system {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* Dashboard card: relative flow, centered, compact */
+  .hero-dash {
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    transform: none !important;
+    width: min(100%, 380px);
+    max-width: 380px;
+    margin: 0 auto;
+    animation: none !important;
+    /* Subtle mini-glow behind card on mobile */
+    box-shadow:
+      0 0 0 1px rgba(0,207,255,0.15),
+      0 0 32px rgba(0,207,255,0.12),
+      0 16px 40px rgba(0,0,0,0.5),
+      inset 0 1px 0 rgba(255,255,255,0.07);
+  }
+
+  /* Hide everything that doesn't belong on mobile */
+  .hero-callout   { display: none !important; }
+  .hero-orb-lines { display: none !important; }
+  .hero-orb-bg    { display: none !important; }
+  .hero-node      { display: none !important; }
+  .hero-cursor-light { display: none; }
+  .hero-metric-chip-anchor { display: none !important; }
+
+  /* Other breakpoint fixes */
+  .cta-box { padding: 48px 24px; overflow: visible; }
+  .cta-box .btn-row { flex-wrap: wrap; gap: 12px; }
+  .cta-box .btn { width: 100%; max-width: 360px; justify-content: center; }
+  .section { padding: 72px 24px; }
   .grid-3 { grid-template-columns: 1fr; }
   .grid-2 { grid-template-columns: 1fr; }
   .grid-4 { grid-template-columns: repeat(2, 1fr); }
   .grid-5 { grid-template-columns: repeat(2, 1fr); }
   .footer-inner { grid-template-columns: 1fr; gap: 28px; }
-  .hero-metric-chip-anchor { display: none; }
-  .cta-box { padding: 48px 24px; overflow: visible; }
-  .cta-box .btn-row { flex-wrap: wrap; gap: 12px; }
-  .cta-box .btn { width: 100%; max-width: 360px; justify-content: center; }
-  .section { padding: 72px 24px; }
   .services-grid { grid-template-columns: 1fr; }
   .service-card { flex-direction: column; }
   .solution-card { flex-direction: column; }
