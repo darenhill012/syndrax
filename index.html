@@ -6,7 +6,7 @@
   <title>Syndrax Sync — E-Commerce Automation Platform</title>
   <meta name="description" content="Price intelligently. Sell everywhere. Scale without hiring. Syndrax Sync automates your entire e-commerce operation across every marketplace.">
   <link rel="icon" type="image/png" href="assets/images/synball.png">
-  <link rel="stylesheet" href="style.css?v=9">
+  <link rel="stylesheet" href="style.css?v=10">
   <script>if(localStorage.getItem("theme")==="light"){document.documentElement.classList.remove("dark");}</script>
 </head>
 <body>
@@ -164,15 +164,15 @@
 
       <!-- HUD data chips (HTML, JS cycles visibility) -->
       <div class="cc-hud" id="ccHud">
-        <div class="cc-chip cc-chip--green"  data-slot="0"><span class="cc-chip-dot"></span><span>In Stock: 38</span></div>
-        <div class="cc-chip cc-chip--cyan"   data-slot="1"><span class="cc-chip-dot"></span><span>eBay Synced</span></div>
-        <div class="cc-chip cc-chip--amber"  data-slot="2"><span class="cc-chip-dot"></span><span>Low Stock</span></div>
-        <div class="cc-chip cc-chip--cyan"   data-slot="3"><span class="cc-chip-dot"></span><span>$24.99</span></div>
-        <div class="cc-chip cc-chip--red"    data-slot="4"><span class="cc-chip-dot"></span><span>OOS</span></div>
+        <div class="cc-chip cc-chip--green"  data-slot="0"><span class="cc-chip-dot"></span><span>Price Updated</span></div>
+        <div class="cc-chip cc-chip--cyan"   data-slot="1"><span class="cc-chip-dot"></span><span>Inventory Synced</span></div>
+        <div class="cc-chip cc-chip--red"    data-slot="2"><span class="cc-chip-dot"></span><span>OOS Prevented</span></div>
+        <div class="cc-chip cc-chip--cyan"   data-slot="3"><span class="cc-chip-dot"></span><span>FB Ads Live</span></div>
+        <div class="cc-chip cc-chip--amber"  data-slot="4"><span class="cc-chip-dot"></span><span>Low Stock Alert</span></div>
         <div class="cc-chip cc-chip--green"  data-slot="5"><span class="cc-chip-dot"></span><span>Margin +18%</span></div>
         <div class="cc-chip cc-chip--cyan"   data-slot="6"><span class="cc-chip-dot"></span><span>Google Feed Synced</span></div>
-        <div class="cc-chip cc-chip--green"  data-slot="7"><span class="cc-chip-dot"></span><span>+12 Orders</span></div>
-        <div class="cc-chip cc-chip--cyan"   data-slot="8"><span class="cc-chip-dot"></span><span>FB Ads Active</span></div>
+        <div class="cc-chip cc-chip--green"  data-slot="7"><span class="cc-chip-dot"></span><span>12 Orders</span></div>
+        <div class="cc-chip cc-chip--cyan"   data-slot="8"><span class="cc-chip-dot"></span><span>Reprice: $24.99</span></div>
       </div>
     </div><!-- /.cc-scene -->
 
@@ -630,28 +630,25 @@
 (function () {
   'use strict';
 
-  // ── Coordinate space (matches viewBox="0 0 720 720") ──────────────────────
   const CX = 360, CY = 360;
-  const ORBIT_R = 252;
-  // Badge dimensions (square icon tiles)
-  const BW = 52, BH = 52;
-  // Icon render size inside badge (using <use> scaled from 24→ ICON_S)
-  const ICON_S = 22;
-  const ICON_OFFSET = (BW - ICON_S) / 2; // centers 22px icon in 52px badge
+  const ORBIT_R = 262;
+  const BW = 48, BH = 48;
+  const ICON_S = 26;
+  const ICON_OFF = (BW - ICON_S) / 2;
+  const INACTIVE = 'rgba(195,220,255,0.48)';
+  const DEFAULT_BORDER = 'rgba(0,207,255,0.22)';
 
-  // ── Platform definitions ──────────────────────────────────────────────────
   const PLATFORMS = [
-    { id: 'amazon',      name: 'Amazon',    symbolId: 'cci-amazon',      accentColor: '#FF9900', isStroke: true  },
-    { id: 'ebay',        name: 'eBay',      symbolId: 'cci-ebay',        accentColor: '#E53238', isStroke: false },
-    { id: 'etsy',        name: 'Etsy',      symbolId: 'cci-etsy',        accentColor: '#F1641E', isStroke: false },
-    { id: 'shopify',     name: 'Shopify',   symbolId: 'cci-shopify',     accentColor: '#96BF48', isStroke: false },
-    { id: 'walmart',     name: 'Walmart',   symbolId: 'cci-walmart',     accentColor: '#0071CE', isStroke: false },
-    { id: 'tiktok',      name: 'TikTok',    symbolId: 'cci-tiktok',      accentColor: '#69C9D0', isStroke: true  },
-    { id: 'facebook',    name: 'Facebook',  symbolId: 'cci-facebook',    accentColor: '#1877F2', isStroke: false },
-    { id: 'google',      name: 'Google',    symbolId: 'cci-google',      accentColor: '#4285F4', isStroke: false },
+    { id: 'amazon',   symbolId: 'cci-amazon',   accentColor: '#FF9900', isStroke: true  },
+    { id: 'ebay',     symbolId: 'cci-ebay',     accentColor: '#E53238', isStroke: false },
+    { id: 'etsy',     symbolId: 'cci-etsy',     accentColor: '#F1641E', isStroke: false },
+    { id: 'shopify',  symbolId: 'cci-shopify',  accentColor: '#96BF48', isStroke: false },
+    { id: 'walmart',  symbolId: 'cci-walmart',  accentColor: '#0071CE', isStroke: false },
+    { id: 'tiktok',   symbolId: 'cci-tiktok',   accentColor: '#69C9D0', isStroke: true  },
+    { id: 'facebook', symbolId: 'cci-facebook', accentColor: '#1877F2', isStroke: false },
+    { id: 'google',   symbolId: 'cci-google',   accentColor: '#4285F4', isStroke: false },
   ];
 
-  // ── HUD chip positions ────────────────────────────────────────────────────
   const CHIP_SLOTS = [
     { top: '5%',  left: '3%'  },
     { top: '18%', left: '76%' },
@@ -664,131 +661,116 @@
     { top: '60%', left: '77%' },
   ];
 
-  // ── DOM refs ──────────────────────────────────────────────────────────────
   const scene   = document.getElementById('ccScene');
   const beamG   = document.getElementById('ccBeams');
   const nodeG   = document.getElementById('ccNodes');
   const packetG = document.getElementById('ccPackets');
   if (!scene || !beamG) return;
 
-  // ── Assign HUD chip positions ─────────────────────────────────────────────
-  const chips = Array.from(document.querySelectorAll('.cc-chip'));
-  chips.forEach((chip, i) => {
+  function isMobile() { return window.innerWidth < 600; }
+
+  // Orb pulse on packet arrival
+  const orbPulseEl = document.querySelector('.cc-orb-pulse');
+  function pulseOrb() {
+    if (!orbPulseEl) return;
+    orbPulseEl.classList.remove('cc-orb-pulse--hit');
+    void orbPulseEl.offsetWidth;
+    orbPulseEl.classList.add('cc-orb-pulse--hit');
+  }
+
+  const allChips = Array.from(document.querySelectorAll('.cc-chip'));
+  allChips.forEach((chip, i) => {
     const s = CHIP_SLOTS[i % CHIP_SLOTS.length];
     chip.style.top  = s.top;
     chip.style.left = s.left;
+    chip.style.setProperty('--float-delay', `${(i * 0.55).toFixed(2)}s`);
   });
 
-  // ── Build SVG badge nodes ─────────────────────────────────────────────────
-  const NS = 'http://www.w3.org/2000/svg';
-  const INACTIVE_ICON_COLOR  = 'rgba(200,225,255,0.5)';  // muted grey-white
-  const ACTIVE_ICON_COLOR    = '#00CFFF';                 // cyan when pinging
+  // On mobile hide chips beyond index 1
+  if (isMobile()) {
+    allChips.slice(2).forEach(c => { c.style.display = 'none'; });
+  }
 
-  const nodes = PLATFORMS.map((p, i) => {
-    const angle0 = (i / PLATFORMS.length) * Math.PI * 2 - Math.PI / 2;
+  const NS = 'http://www.w3.org/2000/svg';
+
+  const activePlatforms = isMobile() ? PLATFORMS.slice(0, 4) : PLATFORMS;
+
+  const nodes = activePlatforms.map((p, i) => {
+    const angle0 = (i / activePlatforms.length) * Math.PI * 2 - Math.PI / 2;
     const nx0 = CX + ORBIT_R * Math.cos(angle0);
     const ny0 = CY + ORBIT_R * Math.sin(angle0);
     const bx0 = nx0 - BW / 2, by0 = ny0 - BH / 2;
 
-    // ── Beam line ────────────────────────────────────────────────────────────
     const beam = document.createElementNS(NS, 'line');
     beam.setAttribute('x1', CX); beam.setAttribute('y1', CY);
     beam.setAttribute('x2', nx0); beam.setAttribute('y2', ny0);
     beam.setAttribute('stroke', p.accentColor);
     beam.setAttribute('stroke-width', '1');
     beam.setAttribute('stroke-dasharray', '4 9');
-    beam.setAttribute('stroke-opacity', '0.3');
+    beam.setAttribute('stroke-opacity', '0.25');
     beam.style.filter = 'url(#ccBeamBlur)';
     beam.style.animationDelay = `${(i * 0.55).toFixed(2)}s`;
     beam.classList.add('cc-beam-line');
     beamG.appendChild(beam);
 
-    // ── Badge group ──────────────────────────────────────────────────────────
     const g = document.createElementNS(NS, 'g');
 
-    // Outer glow halo (hidden by default, shown on active)
     const halo = document.createElementNS(NS, 'rect');
-    halo.setAttribute('x', bx0 - 3); halo.setAttribute('y', by0 - 3);
-    halo.setAttribute('width', BW + 6); halo.setAttribute('height', BH + 6);
-    halo.setAttribute('rx', '13');
+    halo.setAttribute('x', bx0 - 4); halo.setAttribute('y', by0 - 4);
+    halo.setAttribute('width', BW + 8); halo.setAttribute('height', BH + 8);
+    halo.setAttribute('rx', '14');
     halo.setAttribute('fill', 'none');
-    halo.setAttribute('stroke', '#00CFFF');
-    halo.setAttribute('stroke-width', '3');
+    halo.setAttribute('stroke', p.accentColor);
+    halo.setAttribute('stroke-width', '2.5');
     halo.setAttribute('stroke-opacity', '0');
     halo.style.filter = 'url(#ccNodeGlow)';
 
-    // Badge background
     const bg = document.createElementNS(NS, 'rect');
     bg.setAttribute('x', bx0); bg.setAttribute('y', by0);
     bg.setAttribute('width', BW); bg.setAttribute('height', BH);
     bg.setAttribute('rx', '11');
-    bg.setAttribute('fill', 'rgba(5,12,26,0.82)');
-    bg.setAttribute('stroke', p.accentColor);
-    bg.setAttribute('stroke-width', '0.9');
-    bg.setAttribute('stroke-opacity', '0.45');
+    bg.setAttribute('fill', 'rgba(5,12,26,0.84)');
+    bg.setAttribute('stroke', DEFAULT_BORDER);
+    bg.setAttribute('stroke-width', '1');
+    bg.setAttribute('stroke-opacity', '1');
 
-    // Glass sheen strip
     const sheen = document.createElementNS(NS, 'rect');
     sheen.setAttribute('x', bx0 + 5); sheen.setAttribute('y', by0 + 2);
     sheen.setAttribute('width', BW - 10); sheen.setAttribute('height', '1.5');
     sheen.setAttribute('rx', '1');
-    sheen.setAttribute('fill', 'rgba(255,255,255,0.1)');
+    sheen.setAttribute('fill', 'rgba(255,255,255,0.08)');
 
-    // SVG icon via <use> — transform scales 24×24 symbol → ICON_S px
-    const iconScale = ICON_S / 24;
-    // Icon sits in top 60% of badge, centered horizontally
-    const iconX = bx0 + ICON_OFFSET;
-    const iconY = by0 + 5; // 5px top padding
     const iconUse = document.createElementNS(NS, 'use');
     iconUse.setAttribute('href', `#${p.symbolId}`);
     iconUse.setAttribute('width', ICON_S);
     iconUse.setAttribute('height', ICON_S);
-    iconUse.setAttribute('x', iconX);
-    iconUse.setAttribute('y', iconY);
-    // Apply monochrome color — fill+stroke via color
-    iconUse.setAttribute('color', INACTIVE_ICON_COLOR);
+    iconUse.setAttribute('x', bx0 + ICON_OFF);
+    iconUse.setAttribute('y', by0 + ICON_OFF);
+    iconUse.setAttribute('color', INACTIVE);
     if (p.isStroke) {
-      iconUse.setAttribute('stroke', INACTIVE_ICON_COLOR);
+      iconUse.setAttribute('stroke', INACTIVE);
       iconUse.setAttribute('fill', 'none');
     } else {
-      iconUse.setAttribute('fill', INACTIVE_ICON_COLOR);
+      iconUse.setAttribute('fill', INACTIVE);
     }
-    iconUse.style.transition = 'fill 0.3s ease, stroke 0.3s ease, color 0.3s ease';
-
-    // Label text below icon
-    const labelY = by0 + BH - 7.5;
-    const lbl = document.createElementNS(NS, 'text');
-    lbl.setAttribute('x', nx0);
-    lbl.setAttribute('y', labelY);
-    lbl.setAttribute('text-anchor', 'middle');
-    lbl.setAttribute('dominant-baseline', 'middle');
-    lbl.setAttribute('font-family', "'Space Grotesk','Inter',sans-serif");
-    lbl.setAttribute('font-size', '6.8');
-    lbl.setAttribute('font-weight', '700');
-    lbl.setAttribute('letter-spacing', '0.4');
-    lbl.setAttribute('fill', 'rgba(180,215,255,0.65)');
-    lbl.textContent = p.name;
 
     g.appendChild(halo);
     g.appendChild(bg);
     g.appendChild(sheen);
     g.appendChild(iconUse);
-    g.appendChild(lbl);
     nodeG.appendChild(g);
 
-    // ── Data packet dot ──────────────────────────────────────────────────────
     const pkt = document.createElementNS(NS, 'circle');
     pkt.setAttribute('r', '3.5');
-    pkt.setAttribute('fill', '#00CFFF');
+    pkt.setAttribute('fill', p.accentColor);
     pkt.setAttribute('opacity', '0');
     pkt.style.filter = 'url(#ccPktGlow)';
     packetG.appendChild(pkt);
 
-    return { g, halo, bg, sheen, iconUse, lbl, beam, pkt, angle: angle0, p, active: false };
+    return { g, halo, bg, sheen, iconUse, beam, pkt, angle: angle0, p };
   });
 
-  // ── Animation state ───────────────────────────────────────────────────────
-  const ORBIT_SPEED = 0.00012; // rad/ms (~87s full rotation)
+  const ORBIT_SPEED = 0.000105;
   let lastT = null;
   let orbitAngle = 0;
 
@@ -799,23 +781,22 @@
     interval: 3800 + i * 420,
   }));
 
-  // Chip cycling
-  const VISIBLE_CHIPS = 3;
-  const CHIP_CYCLE_MS = 3200;
+  const CHIP_CYCLE_MS = 3600;
   let lastCycle = 0;
   let chipCursor = 0;
+  const chips = isMobile() ? allChips.slice(0, 2) : allChips;
 
   function cycleChips(now) {
     if (now - lastCycle < CHIP_CYCLE_MS) return;
     lastCycle = now;
+    const visible = isMobile() ? 1 : 2;
     chips.forEach(c => c.classList.remove('cc-visible'));
-    for (let k = 0; k < VISIBLE_CHIPS; k++) {
+    for (let k = 0; k < visible; k++) {
       chips[(chipCursor + k) % chips.length].classList.add('cc-visible');
     }
     chipCursor = (chipCursor + 1) % chips.length;
   }
 
-  // ── RAF loop ──────────────────────────────────────────────────────────────
   function tick(now) {
     if (!lastT) lastT = now;
     const dt = Math.min(now - lastT, 50);
@@ -828,64 +809,57 @@
       const ny = CY + ORBIT_R * Math.sin(a);
       const bx = nx - BW / 2, by = ny - BH / 2;
 
-      // Reposition badge elements
-      n.halo.setAttribute('x', bx - 3);   n.halo.setAttribute('y', by - 3);
-      n.bg.setAttribute('x', bx);         n.bg.setAttribute('y', by);
-      n.sheen.setAttribute('x', bx + 5);  n.sheen.setAttribute('y', by + 2);
-      n.iconUse.setAttribute('x', bx + ICON_OFFSET);
-      n.iconUse.setAttribute('y', by + 5);
-      n.lbl.setAttribute('x', nx);
-      n.lbl.setAttribute('y', by + BH - 7.5);
-
-      // Reposition beam endpoint
+      n.halo.setAttribute('x', bx - 4);    n.halo.setAttribute('y', by - 4);
+      n.bg.setAttribute('x', bx);          n.bg.setAttribute('y', by);
+      n.sheen.setAttribute('x', bx + 5);   n.sheen.setAttribute('y', by + 2);
+      n.iconUse.setAttribute('x', bx + ICON_OFF);
+      n.iconUse.setAttribute('y', by + ICON_OFF);
       n.beam.setAttribute('x2', nx);
       n.beam.setAttribute('y2', ny);
 
-      // Packet
       const ps = pkts[i];
       if (!ps.running && now - ps.lastFire > ps.interval) {
         ps.running = true;
         ps.t = 0;
         ps.lastFire = now;
-        // Activate badge glow
-        n.halo.setAttribute('stroke-opacity', '0.6');
-        n.bg.setAttribute('stroke-opacity', '0.85');
-        const activeColor = '#00CFFF';
+        n.halo.setAttribute('stroke-opacity', '0.65');
+        n.bg.setAttribute('stroke', n.p.accentColor);
+        n.bg.setAttribute('stroke-opacity', '0.8');
+        const ac = n.p.accentColor;
         if (n.p.isStroke) {
-          n.iconUse.setAttribute('stroke', activeColor);
-          n.iconUse.setAttribute('color', activeColor);
+          n.iconUse.setAttribute('stroke', ac);
+          n.iconUse.setAttribute('color', ac);
         } else {
-          n.iconUse.setAttribute('fill', activeColor);
-          n.iconUse.setAttribute('color', activeColor);
+          n.iconUse.setAttribute('fill', ac);
+          n.iconUse.setAttribute('color', ac);
         }
-        n.lbl.setAttribute('fill', 'rgba(180,235,255,0.9)');
-        n.beam.setAttribute('stroke-opacity', '0.65');
+        n.beam.setAttribute('stroke-opacity', '0.6');
       }
 
       if (ps.running) {
-        ps.t += dt / 1600;
+        ps.t += dt / 1800;
         if (ps.t >= 1) {
           ps.running = false;
           n.pkt.setAttribute('opacity', '0');
-          // Deactivate badge
+          pulseOrb();
           n.halo.setAttribute('stroke-opacity', '0');
-          n.bg.setAttribute('stroke-opacity', '0.45');
+          n.bg.setAttribute('stroke', DEFAULT_BORDER);
+          n.bg.setAttribute('stroke-opacity', '1');
           if (n.p.isStroke) {
-            n.iconUse.setAttribute('stroke', INACTIVE_ICON_COLOR);
-            n.iconUse.setAttribute('color', INACTIVE_ICON_COLOR);
+            n.iconUse.setAttribute('stroke', INACTIVE);
+            n.iconUse.setAttribute('color', INACTIVE);
           } else {
-            n.iconUse.setAttribute('fill', INACTIVE_ICON_COLOR);
-            n.iconUse.setAttribute('color', INACTIVE_ICON_COLOR);
+            n.iconUse.setAttribute('fill', INACTIVE);
+            n.iconUse.setAttribute('color', INACTIVE);
           }
-          n.lbl.setAttribute('fill', 'rgba(180,215,255,0.65)');
-          n.beam.setAttribute('stroke-opacity', '0.3');
+          n.beam.setAttribute('stroke-opacity', '0.25');
         } else {
           const ease = ps.t < 0.5
             ? 2 * ps.t * ps.t
             : 1 - Math.pow(-2 * ps.t + 2, 2) / 2;
           n.pkt.setAttribute('cx', String(nx + (CX - nx) * ease));
           n.pkt.setAttribute('cy', String(ny + (CY - ny) * ease));
-          n.pkt.setAttribute('opacity', String(Math.sin(ps.t * Math.PI) * 0.92));
+          n.pkt.setAttribute('opacity', String(Math.sin(ps.t * Math.PI) * 0.9));
         }
       }
     });
@@ -894,9 +868,9 @@
     requestAnimationFrame(tick);
   }
 
-  // Kick off chips
-  chips.slice(0, VISIBLE_CHIPS).forEach(c => c.classList.add('cc-visible'));
-  chipCursor = VISIBLE_CHIPS % chips.length;
+  const initVisible = isMobile() ? 1 : 2;
+  chips.slice(0, initVisible).forEach(c => c.classList.add('cc-visible'));
+  chipCursor = initVisible % chips.length;
   requestAnimationFrame(tick);
 })();
 </script>

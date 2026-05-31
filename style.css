@@ -948,6 +948,20 @@ html:not(.dark) .mobile-menu-close {
 .cc-chip.cc-visible {
   opacity: 1;
   transform: translateY(0);
+  animation: ccChipFloat 4.2s ease-in-out infinite;
+  animation-delay: var(--float-delay, 0s);
+}
+@keyframes ccChipFloat {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-5px); }
+}
+.cc-orb-pulse--hit {
+  animation: ccOrbHit 0.85s ease-out forwards;
+}
+@keyframes ccOrbHit {
+  0%   { transform: scale(1);   opacity: 0.6; }
+  30%  { transform: scale(1.65); opacity: 1; }
+  100% { transform: scale(2.3); opacity: 0; }
 }
 
 .cc-chip-dot {
