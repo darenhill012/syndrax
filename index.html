@@ -6,7 +6,7 @@
   <title>Syndrax Sync — E-Commerce Automation Platform</title>
   <meta name="description" content="Price intelligently. Sell everywhere. Scale without hiring. Syndrax Sync automates your entire e-commerce operation across every marketplace.">
   <link rel="icon" type="image/png" href="assets/images/synball.png">
-  <link rel="stylesheet" href="style.css?v=8">
+  <link rel="stylesheet" href="style.css?v=9">
   <script>if(localStorage.getItem("theme")==="light"){document.documentElement.classList.remove("dark");}</script>
 </head>
 <body>
@@ -96,6 +96,50 @@
           <filter id="ccPktGlow" x="-200%" y="-200%" width="500%" height="500%">
             <feGaussianBlur stdDeviation="2.5"/>
           </filter>
+
+          <!-- Marketplace icon symbols (24×24 viewBox, use currentColor) -->
+          <symbol id="cci-amazon" viewBox="0 0 24 24">
+            <g fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="1.5">
+              <path stroke-linecap="round" d="m7 6l2.5 1S10 5 12 5c1.6 0 2.166 1.865 2 3.5c-6.5 0-7.5 3-7.5 4.5s1 4 4 4c2.5 0 4-2 4-2l1 1.5l2.5-2s-1-.833-1-2V9s.668-6.5-5-6.5C7.6 2.5 7 6 7 6"/>
+              <path stroke-linecap="round" d="M13.5 10.856c0 1.5-.92 3.5-2.299 3.5c-1.895 0-1.839-3.5 2.299-3.5M2 17.5s8.5 6.084 17 2.028c0 0-8.5 5.578-17-2.028"/>
+              <path d="M21.99 17.703C22.136 19.1 20.641 21 20.641 21s.98-1.592.784-3.297C19.82 17.065 18 17.79 18 17.79s1.502-1.105 3.424-.701a.71.71 0 0 1 .566.614Z"/>
+            </g>
+          </symbol>
+
+          <symbol id="cci-ebay" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M6.056 12.132v-4.92h1.2v3.026c.59-.703 1.402-.906 2.202-.906c1.34 0 2.828.904 2.828 2.855c0 .233-.015.457-.06.668c.24-.953 1.274-1.305 2.896-1.344c.51-.018 1.095-.018 1.56-.018v-.135c0-.885-.556-1.244-1.53-1.244c-.72 0-1.245.3-1.305.81h-1.275c.136-1.29 1.5-1.62 2.686-1.62c1.064 0 1.995.27 2.415 1.02l-.436-.84h1.41l2.055 4.125l2.055-4.126H24l-3.72 7.305h-1.346l1.07-2.04l-2.33-4.38c.13.255.2.555.2.93v2.46c0 .346.01.69.04 1.005H16.8a7 7 0 0 1-.046-.765c-.603.734-1.32.96-2.32.96c-1.48 0-2.272-.78-2.272-1.695q.002-.224.037-.405c-.3 1.246-1.36 2.086-2.767 2.086c-.87 0-1.694-.315-2.2-.93c0 .24-.015.494-.04.734h-1.18c.02-.39.04-.855.04-1.245v-1.05h-4.83c.065 1.095.818 1.74 1.853 1.74c.718 0 1.355-.3 1.568-.93h1.24c-.24 1.29-1.61 1.725-2.79 1.725C.95 15.009 0 13.822 0 12.232c0-1.754.982-2.91 3.116-2.91c1.688 0 2.93.886 2.94 2.806v.005zm9.137.183c-1.095.034-1.77.233-1.77.95c0 .465.36.97 1.305.97c1.26 0 1.935-.69 1.935-1.814v-.13c-.45 0-.99.006-1.484.022h.012zm-6.06 1.875c1.11 0 1.876-.806 1.876-2.02s-.768-2.02-1.893-2.02c-1.11 0-1.89.806-1.89 2.02s.765 2.02 1.875 2.02h.03zm-4.35-2.514c-.044-1.125-.854-1.546-1.725-1.546c-.944 0-1.694.474-1.815 1.546z"/>
+          </symbol>
+
+          <symbol id="cci-etsy" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M8.559 2.445c0-.325.033-.52.59-.52h7.465c1.3 0 2.02 1.11 2.54 3.193l.42 1.666h1.27c.23-4.728.43-6.784.43-6.784s-3.196.36-5.09.36H6.635L1.521.196v1.37l1.725.326c1.21.24 1.5.496 1.6 1.606c0 0 .11 3.27.11 8.64 0 5.385-.09 8.61-.09 8.61 0 .973-.39 1.333-1.59 1.573l-1.722.33V24l5.13-.165h8.55c1.935 0 6.39.165 6.39.165.105-1.17.75-6.48.855-7.064h-1.2l-1.284 2.91c-1.005 2.28-2.476 2.445-4.11 2.445h-4.906c-1.63 0-2.415-.64-2.415-2.05V12.8s3.62 0 4.79.096c.912.064 1.463.325 1.76 1.598l.39 1.695h1.41l-.09-4.278.192-4.305h-1.391l-.45 1.89c-.283 1.244-.48 1.47-1.754 1.6-1.666.17-4.815.14-4.815.14V2.45h-.05z"/>
+          </symbol>
+
+          <symbol id="cci-shopify" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M14.9 5.1s-.2.06-.54.17c-.06-.18-.14-.41-.26-.63c-.38-.73-.94-1.11-1.62-1.12c-.05 0-.09 0-.14.01c-.02-.02-.04-.05-.06-.07c-.29-.32-.67-.47-1.12-.46c-.87.03-1.74.66-2.45 1.78c-.5.79-.87 1.78-.98 2.54c-1 .31-1.7.53-1.72.53c-.51.16-.52.18-.59.65c-.05.36-1.37 10.6-1.37 10.6L15.03 21V5.08c-.05 0-.1.01-.13.02m-2.54.79c-.58.18-1.22.38-1.85.57c.18-.69.52-1.37.94-1.82c.16-.17.37-.35.63-.46c.24.51.29 1.22.28 1.71m-1.19-2.31c.2 0 .38.04.53.14c-.24.12-.46.3-.68.53c-.55.59-.98 1.52-1.15 2.41c-.53.16-1.04.32-1.52.47c.3-1.41 1.48-3.51 2.82-3.55m-1.7 7.99c.06.93 2.52 1.14 2.66 3.33c.11 1.72-.91 2.9-2.39 2.99C7.98 18 7 16.96 7 16.96l.37-1.59s.98.74 1.76.69c.51-.03.69-.45.68-.74c-.08-1.22-2.08-1.15-2.2-3.15c-.11-1.69 1-3.39 3.44-3.55c.95-.06 1.43.18 1.43.18l-.56 2.09s-.62-.28-1.36-.24c-1.08.07-1.1.75-1.09.92m3.47-5.86c-.01-.44-.06-1.06-.27-1.59c.66.13.99.87 1.13 1.32c-.25.08-.54.17-.86.27m2.45 15.25l4.56-1.13S17.99 6.57 17.98 6.48s-.09-.14-.16-.15s-1.35-.03-1.35-.03s-.78-.76-1.08-1.05z"/>
+          </symbol>
+
+          <symbol id="cci-walmart" viewBox="0 0 24 24">
+            <path fill="currentColor" d="m8.233 13.132l-4.776 2.217a1.22 1.22 0 0 0-.134 1.656c.384.655 1.056.968 1.5.706L9.142 14.7a.86.86 0 0 0 .031-1.066a.854.854 0 0 0-.94-.502m7.552.001c-.3-.118-.7.1-.942.505a.87.87 0 0 0 .026 1.06l4.315 3.018c.448.256 1.123-.055 1.507-.711s.309-1.4-.135-1.656Zm-3.777 2.138a.856.856 0 0 0-.906.556l-.466 5.235c0 .518.606.938 1.372.938s1.371-.42 1.371-.938l-.462-5.235a.86.86 0 0 0-.909-.556m2.835-4.904a.88.88 0 0 0 .942.509l4.776-2.221c.444-.262.51-.995.135-1.654s-1.059-.97-1.507-.714L14.874 9.3a.88.88 0 0 0-.026 1.07ZM4.827 6.289c-.448-.262-1.12.05-1.5.71a1.22 1.22 0 0 0 .134 1.656l4.772 2.215a.854.854 0 0 0 .94-.5a.86.86 0 0 0-.031-1.065ZM12.008 2c-.766 0-1.372.424-1.372.943l.472 5.234a.856.856 0 0 0 .9.556a.86.86 0 0 0 .909-.556l.462-5.234C13.38 2.424 12.77 2 12.008 2"/>
+          </symbol>
+
+          <symbol id="cci-tiktok" viewBox="0 0 24 24">
+            <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+              <path d="M21 8v8a5 5 0 0 1-5 5H8a5 5 0 0 1-5-5V8a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5"/>
+              <path d="M10 12a3 3 0 1 0 3 3V6c.333 1 1.6 3 4 3"/>
+            </g>
+          </symbol>
+
+          <symbol id="cci-facebook" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95"/>
+          </symbol>
+
+          <symbol id="cci-google" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M4 22.93a4 4 0 1 1 0-8a4 4 0 0 1 0 8m19.464-6.001l-8-13.857a4 4 0 0 0-6.93 4l8.001 13.857a4.001 4.001 0 0 0 6.93-4M7.514 4.844l-5.95 10.304A4.5 4.5 0 0 1 4 14.43c2.56-.008 4.625 2.158 4.494 4.715l3.217-5.573l-3.61-6.25a4.46 4.46 0 0 1-.587-2.478"/>
+          </symbol>
+
+          <symbol id="cci-woocommerce" viewBox="0 0 24 24">
+            <path fill="currentColor" fill-rule="evenodd" d="M1 7.5a2 2 0 0 1 2-2h18a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-5.761l1.247 3.12l-5.616-3.12H3a2 2 0 0 1-2-2zm10.297.177a.75.75 0 1 0-1.346-.661a13.3 13.3 0 0 0-1.329 5.022c-.402-.892-.64-1.86-.737-2.911a.75.75 0 0 0-1.407-.286L4.48 12.563a45 45 0 0 1-.84-5.035a.75.75 0 1 0-1.49.169a47 47 0 0 0 .881 5.258a27 27 0 0 0 .462 1.741l.042.128a.75.75 0 0 0 1.372.117l1.889-3.522a9.4 9.4 0 0 0 2.05 3.669a.75.75 0 0 0 1.306-.569c-.22-2.42.095-4.705 1.144-6.842Zm2.004 1.691c-.293.278-.556.73-.671 1.302c-.116.572-.05 1.091.111 1.461c.164.372.388.531.58.57c.19.039.46-.02.754-.3c.293-.277.556-.73.672-1.302s.05-1.09-.112-1.46c-.163-.373-.388-.532-.579-.57c-.191-.04-.46.02-.755.3ZM12.27 8.28c.54-.512 1.284-.843 2.084-.68c.8.161 1.356.755 1.655 1.437c.3.686.377 1.523.208 2.36c-.17.838-.567 1.58-1.11 2.094c-.541.513-1.285.843-2.085.681s-1.356-.755-1.655-1.438c-.3-.685-.377-1.523-.208-2.36c.17-.838.567-1.58 1.11-2.094Zm6.099 2.487c.12-.593.386-1.064.678-1.354c.296-.293.55-.343.71-.311s.372.175.53.559c.155.378.214.914.093 1.507c-.12.592-.385 1.063-.677 1.353c-.297.294-.55.344-.71.311s-.373-.175-.53-.558c-.155-.379-.215-.915-.094-1.507m1.684-3.136c-.802-.16-1.537.196-2.062.717c-.53.525-.92 1.276-1.092 2.119s-.107 1.686.176 2.376c.28.684.82 1.298 1.622 1.46c.801.161 1.536-.196 2.062-.717c.53-.525.92-1.275 1.091-2.119c.172-.843.107-1.686-.176-2.376c-.28-.684-.82-1.298-1.621-1.46" clip-rule="evenodd"/>
+          </symbol>
         </defs>
 
         <!-- Outer dashed orbit guide ring -->
@@ -592,26 +636,28 @@
 (function () {
   'use strict';
 
-  // ── SVG coordinate space (matches viewBox="0 0 720 720") ──────────────────
-  const VB = 720, CX = 360, CY = 360;
-  const ORBIT_R = 252;   // matches SVG circle r="252"
-  const NW = 88, NH = 34; // badge width/height
+  // ── Coordinate space (matches viewBox="0 0 720 720") ──────────────────────
+  const CX = 360, CY = 360;
+  const ORBIT_R = 252;
+  // Badge dimensions (square icon tiles)
+  const BW = 52, BH = 52;
+  // Icon render size inside badge (using <use> scaled from 24→ ICON_S)
+  const ICON_S = 22;
+  const ICON_OFFSET = (BW - ICON_S) / 2; // centers 22px icon in 52px badge
 
   // ── Platform definitions ──────────────────────────────────────────────────
-  // color: accent color for border + glow; glowColor: rgba string for beam
   const PLATFORMS = [
-    { name: 'Amazon',    color: '#FF9900', glow: 'rgba(255,153,0,'   },
-    { name: 'eBay',      color: '#E53238', glow: 'rgba(229,50,56,'   },
-    { name: 'Etsy',      color: '#F1641E', glow: 'rgba(241,100,30,'  },
-    { name: 'Shopify',   color: '#96BF48', glow: 'rgba(150,191,72,'  },
-    { name: 'Walmart',   color: '#0071CE', glow: 'rgba(0,113,206,'   },
-    { name: 'TikTok',    color: '#69C9D0', glow: 'rgba(105,201,208,' },
-    { name: 'Facebook',  color: '#1877F2', glow: 'rgba(24,119,242,'  },
-    { name: 'Google',    color: '#4285F4', glow: 'rgba(66,133,244,'  },
+    { id: 'amazon',      name: 'Amazon',    symbolId: 'cci-amazon',      accentColor: '#FF9900', isStroke: true  },
+    { id: 'ebay',        name: 'eBay',      symbolId: 'cci-ebay',        accentColor: '#E53238', isStroke: false },
+    { id: 'etsy',        name: 'Etsy',      symbolId: 'cci-etsy',        accentColor: '#F1641E', isStroke: false },
+    { id: 'shopify',     name: 'Shopify',   symbolId: 'cci-shopify',     accentColor: '#96BF48', isStroke: false },
+    { id: 'walmart',     name: 'Walmart',   symbolId: 'cci-walmart',     accentColor: '#0071CE', isStroke: false },
+    { id: 'tiktok',      name: 'TikTok',    symbolId: 'cci-tiktok',      accentColor: '#69C9D0', isStroke: true  },
+    { id: 'facebook',    name: 'Facebook',  symbolId: 'cci-facebook',    accentColor: '#1877F2', isStroke: false },
+    { id: 'google',      name: 'Google',    symbolId: 'cci-google',      accentColor: '#4285F4', isStroke: false },
   ];
 
-  // ── HUD chip positions (%, %) for each slot ───────────────────────────────
-  // Placed away from the orbit ring so they don't clash with badges
+  // ── HUD chip positions ────────────────────────────────────────────────────
   const CHIP_SLOTS = [
     { top: '5%',  left: '3%'  },
     { top: '18%', left: '76%' },
@@ -624,14 +670,14 @@
     { top: '60%', left: '77%' },
   ];
 
-  // ── Get DOM refs ──────────────────────────────────────────────────────────
+  // ── DOM refs ──────────────────────────────────────────────────────────────
   const scene   = document.getElementById('ccScene');
   const beamG   = document.getElementById('ccBeams');
   const nodeG   = document.getElementById('ccNodes');
   const packetG = document.getElementById('ccPackets');
   if (!scene || !beamG) return;
 
-  // ── Assign chip slot positions ────────────────────────────────────────────
+  // ── Assign HUD chip positions ─────────────────────────────────────────────
   const chips = Array.from(document.querySelectorAll('.cc-chip'));
   chips.forEach((chip, i) => {
     const s = CHIP_SLOTS[i % CHIP_SLOTS.length];
@@ -639,119 +685,137 @@
     chip.style.left = s.left;
   });
 
-  // ── Build SVG node badges + beams ─────────────────────────────────────────
+  // ── Build SVG badge nodes ─────────────────────────────────────────────────
   const NS = 'http://www.w3.org/2000/svg';
+  const INACTIVE_ICON_COLOR  = 'rgba(200,225,255,0.5)';  // muted grey-white
+  const ACTIVE_ICON_COLOR    = '#00CFFF';                 // cyan when pinging
 
   const nodes = PLATFORMS.map((p, i) => {
     const angle0 = (i / PLATFORMS.length) * Math.PI * 2 - Math.PI / 2;
     const nx0 = CX + ORBIT_R * Math.cos(angle0);
     const ny0 = CY + ORBIT_R * Math.sin(angle0);
+    const bx0 = nx0 - BW / 2, by0 = ny0 - BH / 2;
 
-    // ── Beam ────────────────────────────────────────────────────────────────
+    // ── Beam line ────────────────────────────────────────────────────────────
     const beam = document.createElementNS(NS, 'line');
     beam.setAttribute('x1', CX); beam.setAttribute('y1', CY);
     beam.setAttribute('x2', nx0); beam.setAttribute('y2', ny0);
-    beam.setAttribute('stroke', p.color);
+    beam.setAttribute('stroke', p.accentColor);
     beam.setAttribute('stroke-width', '1');
-    beam.setAttribute('stroke-dasharray', '5 8');
-    beam.setAttribute('stroke-opacity', '0.35');
+    beam.setAttribute('stroke-dasharray', '4 9');
+    beam.setAttribute('stroke-opacity', '0.3');
     beam.style.filter = 'url(#ccBeamBlur)';
-    // stagger beam pulse so they don't all flash together
-    beam.style.animationDelay = `${i * 0.44}s`;
+    beam.style.animationDelay = `${(i * 0.55).toFixed(2)}s`;
     beam.classList.add('cc-beam-line');
     beamG.appendChild(beam);
 
     // ── Badge group ──────────────────────────────────────────────────────────
     const g = document.createElementNS(NS, 'g');
 
-    // Outer glow rect (blurred duplicate for soft halo)
-    const glow = document.createElementNS(NS, 'rect');
-    glow.setAttribute('x', nx0 - NW / 2 - 1);
-    glow.setAttribute('y', ny0 - NH / 2 - 1);
-    glow.setAttribute('width', NW + 2);
-    glow.setAttribute('height', NH + 2);
-    glow.setAttribute('rx', '9');
-    glow.setAttribute('fill', 'none');
-    glow.setAttribute('stroke', p.color);
-    glow.setAttribute('stroke-width', '3');
-    glow.setAttribute('stroke-opacity', '0.35');
-    glow.style.filter = 'url(#ccNodeGlow)';
+    // Outer glow halo (hidden by default, shown on active)
+    const halo = document.createElementNS(NS, 'rect');
+    halo.setAttribute('x', bx0 - 3); halo.setAttribute('y', by0 - 3);
+    halo.setAttribute('width', BW + 6); halo.setAttribute('height', BH + 6);
+    halo.setAttribute('rx', '13');
+    halo.setAttribute('fill', 'none');
+    halo.setAttribute('stroke', '#00CFFF');
+    halo.setAttribute('stroke-width', '3');
+    halo.setAttribute('stroke-opacity', '0');
+    halo.style.filter = 'url(#ccNodeGlow)';
 
-    // Background fill
+    // Badge background
     const bg = document.createElementNS(NS, 'rect');
-    bg.setAttribute('x', nx0 - NW / 2);
-    bg.setAttribute('y', ny0 - NH / 2);
-    bg.setAttribute('width', NW);
-    bg.setAttribute('height', NH);
-    bg.setAttribute('rx', '8');
-    bg.setAttribute('fill', 'rgba(5,11,22,0.88)');
-    bg.setAttribute('stroke', p.color);
-    bg.setAttribute('stroke-width', '0.85');
-    bg.setAttribute('stroke-opacity', '0.6');
+    bg.setAttribute('x', bx0); bg.setAttribute('y', by0);
+    bg.setAttribute('width', BW); bg.setAttribute('height', BH);
+    bg.setAttribute('rx', '11');
+    bg.setAttribute('fill', 'rgba(5,12,26,0.82)');
+    bg.setAttribute('stroke', p.accentColor);
+    bg.setAttribute('stroke-width', '0.9');
+    bg.setAttribute('stroke-opacity', '0.45');
 
-    // Glass sheen — top highlight line
+    // Glass sheen strip
     const sheen = document.createElementNS(NS, 'rect');
-    sheen.setAttribute('x', nx0 - NW / 2 + 4);
-    sheen.setAttribute('y', ny0 - NH / 2 + 1);
-    sheen.setAttribute('width', NW - 8);
-    sheen.setAttribute('height', '1');
+    sheen.setAttribute('x', bx0 + 5); sheen.setAttribute('y', by0 + 2);
+    sheen.setAttribute('width', BW - 10); sheen.setAttribute('height', '1.5');
     sheen.setAttribute('rx', '1');
-    sheen.setAttribute('fill', 'rgba(255,255,255,0.12)');
+    sheen.setAttribute('fill', 'rgba(255,255,255,0.1)');
 
-    // Platform name text
-    const txt = document.createElementNS(NS, 'text');
-    txt.setAttribute('x', nx0);
-    txt.setAttribute('y', ny0);
-    txt.setAttribute('text-anchor', 'middle');
-    txt.setAttribute('dominant-baseline', 'middle');
-    txt.setAttribute('font-family', "'Space Grotesk','Inter',sans-serif");
-    txt.setAttribute('font-size', '10');
-    txt.setAttribute('font-weight', '700');
-    txt.setAttribute('letter-spacing', '0.6');
-    txt.setAttribute('fill', 'rgba(210,235,255,0.88)');
-    txt.textContent = p.name;
+    // SVG icon via <use> — transform scales 24×24 symbol → ICON_S px
+    const iconScale = ICON_S / 24;
+    // Icon sits in top 60% of badge, centered horizontally
+    const iconX = bx0 + ICON_OFFSET;
+    const iconY = by0 + 5; // 5px top padding
+    const iconUse = document.createElementNS(NS, 'use');
+    iconUse.setAttribute('href', `#${p.symbolId}`);
+    iconUse.setAttribute('width', ICON_S);
+    iconUse.setAttribute('height', ICON_S);
+    iconUse.setAttribute('x', iconX);
+    iconUse.setAttribute('y', iconY);
+    // Apply monochrome color — fill+stroke via color
+    iconUse.setAttribute('color', INACTIVE_ICON_COLOR);
+    if (p.isStroke) {
+      iconUse.setAttribute('stroke', INACTIVE_ICON_COLOR);
+      iconUse.setAttribute('fill', 'none');
+    } else {
+      iconUse.setAttribute('fill', INACTIVE_ICON_COLOR);
+    }
+    iconUse.style.transition = 'fill 0.3s ease, stroke 0.3s ease, color 0.3s ease';
 
-    g.appendChild(glow);
+    // Label text below icon
+    const labelY = by0 + BH - 7.5;
+    const lbl = document.createElementNS(NS, 'text');
+    lbl.setAttribute('x', nx0);
+    lbl.setAttribute('y', labelY);
+    lbl.setAttribute('text-anchor', 'middle');
+    lbl.setAttribute('dominant-baseline', 'middle');
+    lbl.setAttribute('font-family', "'Space Grotesk','Inter',sans-serif");
+    lbl.setAttribute('font-size', '6.8');
+    lbl.setAttribute('font-weight', '700');
+    lbl.setAttribute('letter-spacing', '0.4');
+    lbl.setAttribute('fill', 'rgba(180,215,255,0.65)');
+    lbl.textContent = p.name;
+
+    g.appendChild(halo);
     g.appendChild(bg);
     g.appendChild(sheen);
-    g.appendChild(txt);
+    g.appendChild(iconUse);
+    g.appendChild(lbl);
     nodeG.appendChild(g);
 
     // ── Data packet dot ──────────────────────────────────────────────────────
     const pkt = document.createElementNS(NS, 'circle');
     pkt.setAttribute('r', '3.5');
-    pkt.setAttribute('fill', p.color);
+    pkt.setAttribute('fill', '#00CFFF');
     pkt.setAttribute('opacity', '0');
     pkt.style.filter = 'url(#ccPktGlow)';
     packetG.appendChild(pkt);
 
-    return { g, glow, bg, sheen, txt, beam, pkt, angle: angle0 };
+    return { g, halo, bg, sheen, iconUse, lbl, beam, pkt, angle: angle0, p, active: false };
   });
 
   // ── Animation state ───────────────────────────────────────────────────────
-  const ORBIT_SPEED = 0.00012; // rad/ms — ~87s full orbit, very slow
+  const ORBIT_SPEED = 0.00012; // rad/ms (~87s full rotation)
   let lastT = null;
   let orbitAngle = 0;
 
-  // Per-node packet state
   const pkts = nodes.map((_, i) => ({
     running: false,
     t: 0,
-    lastFire: -(3000 + i * 800), // stagger first fire
-    interval: 3500 + i * 350,
+    lastFire: -(2500 + i * 900),
+    interval: 3800 + i * 420,
   }));
 
-  // Chip cycling state
-  const VISIBLE = 3;
-  const CYCLE_MS = 3000;
+  // Chip cycling
+  const VISIBLE_CHIPS = 3;
+  const CHIP_CYCLE_MS = 3200;
   let lastCycle = 0;
   let chipCursor = 0;
 
   function cycleChips(now) {
-    if (now - lastCycle < CYCLE_MS) return;
+    if (now - lastCycle < CHIP_CYCLE_MS) return;
     lastCycle = now;
     chips.forEach(c => c.classList.remove('cc-visible'));
-    for (let k = 0; k < VISIBLE; k++) {
+    for (let k = 0; k < VISIBLE_CHIPS; k++) {
       chips[(chipCursor + k) % chips.length].classList.add('cc-visible');
     }
     chipCursor = (chipCursor + 1) % chips.length;
@@ -762,48 +826,72 @@
     if (!lastT) lastT = now;
     const dt = Math.min(now - lastT, 50);
     lastT = now;
-
     orbitAngle += ORBIT_SPEED * dt;
 
     nodes.forEach((n, i) => {
       const a = n.angle + orbitAngle;
       const nx = CX + ORBIT_R * Math.cos(a);
       const ny = CY + ORBIT_R * Math.sin(a);
+      const bx = nx - BW / 2, by = ny - BH / 2;
 
-      // Update badge position
-      const bx = nx - NW / 2, by = ny - NH / 2;
-      n.glow.setAttribute('x', bx - 1);
-      n.glow.setAttribute('y', by - 1);
-      n.bg.setAttribute('x', bx);
-      n.bg.setAttribute('y', by);
-      n.sheen.setAttribute('x', bx + 4);
-      n.sheen.setAttribute('y', by + 1);
-      n.txt.setAttribute('x', nx);
-      n.txt.setAttribute('y', ny);
+      // Reposition badge elements
+      n.halo.setAttribute('x', bx - 3);   n.halo.setAttribute('y', by - 3);
+      n.bg.setAttribute('x', bx);         n.bg.setAttribute('y', by);
+      n.sheen.setAttribute('x', bx + 5);  n.sheen.setAttribute('y', by + 2);
+      n.iconUse.setAttribute('x', bx + ICON_OFFSET);
+      n.iconUse.setAttribute('y', by + 5);
+      n.lbl.setAttribute('x', nx);
+      n.lbl.setAttribute('y', by + BH - 7.5);
 
-      // Update beam endpoint
+      // Reposition beam endpoint
       n.beam.setAttribute('x2', nx);
       n.beam.setAttribute('y2', ny);
 
-      // Packet travel
+      // Packet
       const ps = pkts[i];
       if (!ps.running && now - ps.lastFire > ps.interval) {
         ps.running = true;
         ps.t = 0;
         ps.lastFire = now;
+        // Activate badge glow
+        n.halo.setAttribute('stroke-opacity', '0.6');
+        n.bg.setAttribute('stroke-opacity', '0.85');
+        const activeColor = '#00CFFF';
+        if (n.p.isStroke) {
+          n.iconUse.setAttribute('stroke', activeColor);
+          n.iconUse.setAttribute('color', activeColor);
+        } else {
+          n.iconUse.setAttribute('fill', activeColor);
+          n.iconUse.setAttribute('color', activeColor);
+        }
+        n.lbl.setAttribute('fill', 'rgba(180,235,255,0.9)');
+        n.beam.setAttribute('stroke-opacity', '0.65');
       }
+
       if (ps.running) {
-        ps.t += dt / 1600; // ~1.6s travel
+        ps.t += dt / 1600;
         if (ps.t >= 1) {
           ps.running = false;
           n.pkt.setAttribute('opacity', '0');
+          // Deactivate badge
+          n.halo.setAttribute('stroke-opacity', '0');
+          n.bg.setAttribute('stroke-opacity', '0.45');
+          if (n.p.isStroke) {
+            n.iconUse.setAttribute('stroke', INACTIVE_ICON_COLOR);
+            n.iconUse.setAttribute('color', INACTIVE_ICON_COLOR);
+          } else {
+            n.iconUse.setAttribute('fill', INACTIVE_ICON_COLOR);
+            n.iconUse.setAttribute('color', INACTIVE_ICON_COLOR);
+          }
+          n.lbl.setAttribute('fill', 'rgba(180,215,255,0.65)');
+          n.beam.setAttribute('stroke-opacity', '0.3');
         } else {
           const ease = ps.t < 0.5
             ? 2 * ps.t * ps.t
-            : 1 - Math.pow(-2 * ps.t + 2, 2) / 2; // ease-in-out
-          n.pkt.setAttribute('cx', nx + (CX - nx) * ease);
-          n.pkt.setAttribute('cy', ny + (CY - ny) * ease);
-          n.pkt.setAttribute('opacity', String(Math.sin(ps.t * Math.PI) * 0.9));
+            : 1 - Math.pow(-2 * ps.t + 2, 2) / 2;
+          n.pkt.setAttribute('cx', String(nx + (CX - nx) * ease));
+          n.pkt.setAttribute('cy', String(ny + (CY - ny) * ease));
+          n.pkt.setAttribute('opacity', String(Math.sin(ps.t * Math.PI) * 0.92));
         }
       }
     });
@@ -812,9 +900,9 @@
     requestAnimationFrame(tick);
   }
 
-  // Kick off: show first batch of chips immediately
-  chips.slice(0, VISIBLE).forEach(c => c.classList.add('cc-visible'));
-  chipCursor = VISIBLE % chips.length;
+  // Kick off chips
+  chips.slice(0, VISIBLE_CHIPS).forEach(c => c.classList.add('cc-visible'));
+  chipCursor = VISIBLE_CHIPS % chips.length;
   requestAnimationFrame(tick);
 })();
 </script>
