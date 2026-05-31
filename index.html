@@ -12,7 +12,7 @@
   <meta name="twitter:title" content="Syndrax Sync — AI E-Commerce Automation Platform">
   <meta name="twitter:description" content="Automate pricing, inventory sync, oversell protection, marketplace listings, and marketing feeds across every channel with Syndrax.">
   <link rel="icon" type="image/png" href="assets/images/synball.png">
-  <link rel="stylesheet" href="style.css?v=18">
+  <link rel="stylesheet" href="style.css?v=19">
   <script>if(localStorage.getItem("theme")==="light"){document.documentElement.classList.remove("dark");}</script>
 </head>
 <body>
@@ -94,54 +94,53 @@
       </div>
     </div>
 
-    <!-- Right column: visual system (orb dominant, card overlapping, callouts in open space) -->
+    <!-- Right column: orb system with orbiting marketplace nodes -->
     <div class="hero-right">
-
-      <!-- The full visual cluster: orb is the dominant anchor -->
       <div class="hero-visual-cluster">
-
-        <!-- Orb system — fills the right column, callouts + card positioned around it -->
         <div class="hero-orb-system" aria-hidden="false">
 
-          <!-- SVG connector lines from orb center outward -->
-          <svg class="hero-orb-lines" viewBox="0 0 600 600" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <!-- Line to top-left callout (Marketplace Updates) -->
-            <line x1="300" y1="300" x2="52" y2="112" stroke="url(#lineGradC)" stroke-width="1" stroke-dasharray="5 5" opacity="0.55"/>
-            <circle cx="52" cy="112" r="3.5" fill="#00CFFF" opacity="0.85"/>
-            <!-- Line to top-right callout (Pricing Automation) -->
-            <line x1="300" y1="300" x2="548" y2="108" stroke="url(#lineGradA)" stroke-width="1" stroke-dasharray="5 5" opacity="0.55"/>
-            <circle cx="548" cy="108" r="3.5" fill="#00CFFF" opacity="0.85"/>
-            <!-- Line to right-mid callout (Inventory Sync) -->
-            <line x1="300" y1="300" x2="552" y2="292" stroke="url(#lineGradB)" stroke-width="1" stroke-dasharray="5 5" opacity="0.5"/>
-            <circle cx="552" cy="292" r="3.5" fill="#00CFFF" opacity="0.85"/>
-            <!-- Line to bottom-right callout (Oversell Protection) -->
-            <line x1="300" y1="300" x2="548" y2="488" stroke="url(#lineGradD)" stroke-width="1" stroke-dasharray="5 5" opacity="0.48"/>
-            <circle cx="548" cy="488" r="3.5" fill="#FF00D4" opacity="0.75"/>
-            <!-- Line to bottom-left callout (Marketing Feed) -->
-            <line x1="300" y1="300" x2="52" y2="484" stroke="url(#lineGradE)" stroke-width="1" stroke-dasharray="5 5" opacity="0.48"/>
-            <circle cx="52" cy="484" r="3.5" fill="#FF00D4" opacity="0.75"/>
+          <!-- Cursor light overlay (mouse glow, right-column only) -->
+          <div class="hero-cursor-light" id="heroCursorLight"></div>
+
+          <!-- SVG connector lines — one per node, 9 total, from orb center (300,300) to node positions -->
+          <!-- Node positions (SVG 600x600 coords):
+               shopify   300, 56   (top)
+               amazon    520, 120  (top-right)
+               walmart   564, 300  (right)
+               etsy      520, 480  (bottom-right)
+               tiktok    300, 544  (bottom)
+               ebay       80, 480  (bottom-left)
+               google     36, 300  (left)
+               facebook   80, 120  (top-left)
+               woocommerce 160, 56 (top, inner-left)
+          -->
+          <svg class="hero-orb-lines" id="heroOrbLines" viewBox="0 0 600 600" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
             <defs>
-              <linearGradient id="lineGradA" x1="300" y1="300" x2="548" y2="108" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stop-color="#00CFFF" stop-opacity="0"/>
-                <stop offset="100%" stop-color="#00CFFF" stop-opacity="1"/>
-              </linearGradient>
-              <linearGradient id="lineGradB" x1="300" y1="300" x2="552" y2="292" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stop-color="#00CFFF" stop-opacity="0"/>
-                <stop offset="100%" stop-color="#00CFFF" stop-opacity="1"/>
-              </linearGradient>
-              <linearGradient id="lineGradC" x1="300" y1="300" x2="52" y2="112" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stop-color="#00CFFF" stop-opacity="0"/>
-                <stop offset="100%" stop-color="#00CFFF" stop-opacity="1"/>
-              </linearGradient>
-              <linearGradient id="lineGradD" x1="300" y1="300" x2="548" y2="488" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stop-color="#FF00D4" stop-opacity="0"/>
-                <stop offset="100%" stop-color="#FF00D4" stop-opacity="1"/>
-              </linearGradient>
-              <linearGradient id="lineGradE" x1="300" y1="300" x2="52" y2="484" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stop-color="#FF00D4" stop-opacity="0"/>
-                <stop offset="100%" stop-color="#FF00D4" stop-opacity="1"/>
-              </linearGradient>
+              <linearGradient id="cnGradShopify"     x1="300" y1="300" x2="300" y2="56"  gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#00CFFF" stop-opacity="0"/><stop offset="100%" stop-color="#00CFFF" stop-opacity="0.7"/></linearGradient>
+              <linearGradient id="cnGradAmazon"      x1="300" y1="300" x2="520" y2="120" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#00CFFF" stop-opacity="0"/><stop offset="100%" stop-color="#00CFFF" stop-opacity="0.7"/></linearGradient>
+              <linearGradient id="cnGradWalmart"     x1="300" y1="300" x2="564" y2="300" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#00CFFF" stop-opacity="0"/><stop offset="100%" stop-color="#00CFFF" stop-opacity="0.7"/></linearGradient>
+              <linearGradient id="cnGradEtsy"        x1="300" y1="300" x2="520" y2="480" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#00CFFF" stop-opacity="0"/><stop offset="100%" stop-color="#00CFFF" stop-opacity="0.7"/></linearGradient>
+              <linearGradient id="cnGradTiktok"      x1="300" y1="300" x2="300" y2="544" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#00CFFF" stop-opacity="0"/><stop offset="100%" stop-color="#00CFFF" stop-opacity="0.7"/></linearGradient>
+              <linearGradient id="cnGradEbay"        x1="300" y1="300" x2="80"  y2="480" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#00CFFF" stop-opacity="0"/><stop offset="100%" stop-color="#00CFFF" stop-opacity="0.7"/></linearGradient>
+              <linearGradient id="cnGradGoogle"      x1="300" y1="300" x2="36"  y2="300" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#00CFFF" stop-opacity="0"/><stop offset="100%" stop-color="#00CFFF" stop-opacity="0.7"/></linearGradient>
+              <linearGradient id="cnGradFacebook"    x1="300" y1="300" x2="80"  y2="120" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#00CFFF" stop-opacity="0"/><stop offset="100%" stop-color="#00CFFF" stop-opacity="0.7"/></linearGradient>
+              <linearGradient id="cnGradWoocommerce" x1="300" y1="300" x2="160" y2="56"  gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#00CFFF" stop-opacity="0"/><stop offset="100%" stop-color="#00CFFF" stop-opacity="0.7"/></linearGradient>
+              <filter id="dotGlow"><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
             </defs>
+
+            <!-- Connector lines -->
+            <line class="hero-cn" data-cn="shopify"     x1="300" y1="300" x2="300" y2="56"  stroke="url(#cnGradShopify)"     stroke-width="1" stroke-dasharray="5 6"/>
+            <line class="hero-cn" data-cn="amazon"      x1="300" y1="300" x2="520" y2="120" stroke="url(#cnGradAmazon)"      stroke-width="1" stroke-dasharray="5 6"/>
+            <line class="hero-cn" data-cn="walmart"     x1="300" y1="300" x2="564" y2="300" stroke="url(#cnGradWalmart)"     stroke-width="1" stroke-dasharray="5 6"/>
+            <line class="hero-cn" data-cn="etsy"        x1="300" y1="300" x2="520" y2="480" stroke="url(#cnGradEtsy)"        stroke-width="1" stroke-dasharray="5 6"/>
+            <line class="hero-cn" data-cn="tiktok"      x1="300" y1="300" x2="300" y2="544" stroke="url(#cnGradTiktok)"      stroke-width="1" stroke-dasharray="5 6"/>
+            <line class="hero-cn" data-cn="ebay"        x1="300" y1="300" x2="80"  y2="480" stroke="url(#cnGradEbay)"        stroke-width="1" stroke-dasharray="5 6"/>
+            <line class="hero-cn" data-cn="google"      x1="300" y1="300" x2="36"  y2="300" stroke="url(#cnGradGoogle)"      stroke-width="1" stroke-dasharray="5 6"/>
+            <line class="hero-cn" data-cn="facebook"    x1="300" y1="300" x2="80"  y2="120" stroke="url(#cnGradFacebook)"    stroke-width="1" stroke-dasharray="5 6"/>
+            <line class="hero-cn" data-cn="woocommerce" x1="300" y1="300" x2="160" y2="56"  stroke="url(#cnGradWoocommerce)" stroke-width="1" stroke-dasharray="5 6"/>
+
+            <!-- Travelling data dot (JS moves this along the active connector) -->
+            <circle class="hero-data-dot" id="heroDataDot" r="4" fill="#00CFFF" filter="url(#dotGlow)" opacity="0"/>
           </svg>
 
           <!-- Orb core — centered -->
@@ -152,137 +151,77 @@
             <img src="assets/images/synball.png" alt="" class="hero-orb-img">
           </div>
 
-          <!-- Dashboard card — overlaps orb from the left-center -->
-          <div class="hero-dash">
+          <!-- Dashboard card — overlaps orb from the left-center, autoplay-driven -->
+          <div class="hero-dash" id="heroDash">
             <div class="hero-dash-header">
               <div class="hero-dash-title">
                 <span class="hero-dash-live-dot"></span>
-                Live Commerce Control
+                <img class="hero-dash-channel-icon" id="heroDashIcon" src="assets/icons/marketplaces/shopify.svg" alt="" width="16" height="16">
+                <span id="heroDashTitle">Shopify Automation</span>
               </div>
-              <span class="hero-dash-status">Systems Active</span>
+              <span class="hero-dash-status" id="heroDashStatus">Syncing</span>
             </div>
 
-            <div class="hero-dash-row">
-              <div class="hero-dash-row-icon hero-dash-row-icon--green">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-              </div>
-              <div class="hero-dash-row-body">
-                <div class="hero-dash-row-label">Pricing Automation</div>
-                <div class="hero-dash-row-value">$24.99 <span class="hero-dash-arrow">→</span> $27.49</div>
-              </div>
-              <div class="hero-dash-row-badge hero-dash-row-badge--green">+18% margin</div>
-            </div>
-
-            <div class="hero-dash-row">
-              <div class="hero-dash-row-icon hero-dash-row-icon--cyan">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.88"/></svg>
-              </div>
-              <div class="hero-dash-row-body">
-                <div class="hero-dash-row-label">Inventory Sync</div>
-                <div class="hero-dash-row-value">Amazon · eBay · Shopify</div>
-              </div>
-              <div class="hero-dash-row-badge hero-dash-row-badge--cyan">38 live</div>
-            </div>
-
-            <div class="hero-dash-row">
-              <div class="hero-dash-row-icon hero-dash-row-icon--amber">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
-              </div>
-              <div class="hero-dash-row-body">
-                <div class="hero-dash-row-label">Oversell Protection</div>
-                <div class="hero-dash-row-value">Walmart paused</div>
-              </div>
-              <div class="hero-dash-row-badge hero-dash-row-badge--amber">0 oversells</div>
-            </div>
-
-            <div class="hero-dash-row">
-              <div class="hero-dash-row-icon hero-dash-row-icon--blue">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/><path d="M12 13v4m-2-2h4"/></svg>
-              </div>
-              <div class="hero-dash-row-body">
-                <div class="hero-dash-row-label">Marketing Feed</div>
-                <div class="hero-dash-row-value">Google · Facebook</div>
-              </div>
-              <div class="hero-dash-row-badge hero-dash-row-badge--cyan">Synced</div>
-            </div>
-
-            <div class="hero-dash-row">
-              <div class="hero-dash-row-icon hero-dash-row-icon--purple">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-              </div>
-              <div class="hero-dash-row-body">
-                <div class="hero-dash-row-label">Marketplace Updates</div>
-                <div class="hero-dash-row-value">Fees, stock &amp; rules</div>
-              </div>
-              <div class="hero-dash-row-badge hero-dash-row-badge--green">Updated</div>
+            <div class="hero-dash-tasks" id="heroDashTasks">
+              <div class="hero-dash-task"><span class="hero-dash-task-dot"></span><span>AI generated product title</span></div>
+              <div class="hero-dash-task"><span class="hero-dash-task-dot"></span><span>Pricing rule created</span></div>
+              <div class="hero-dash-task"><span class="hero-dash-task-dot"></span><span>Inventory sync active</span></div>
+              <div class="hero-dash-task"><span class="hero-dash-task-dot"></span><span>Marketing feed prepared</span></div>
+              <div class="hero-dash-task hero-dash-task--complete"><span class="hero-dash-task-dot hero-dash-task-dot--done"></span><span>Shopify sync complete</span></div>
             </div>
 
             <div class="hero-dash-footer">
-              <span>Last updated <strong>12 seconds ago</strong></span>
-              <span class="hero-dash-powered">by Syndrax AI</span>
+              <span class="hero-dash-result" id="heroDashResult">Storefront automation synced</span>
+              <div class="hero-dash-progress">
+                <div class="hero-dash-progress-bar" id="heroDashProgress"></div>
+              </div>
             </div>
           </div>
 
-          <!-- Feature callouts — floating in open space around the orb -->
-          <!-- Top-left: Marketplace Updates -->
-          <div class="hero-callout hero-callout-tl">
-            <div class="hero-callout-icon hero-callout-icon--cyan">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-            </div>
-            <div class="hero-callout-text">
-              <strong>Marketplace Updates</strong>
-              <span>Stay compliant with fees, policies, and stock changes.</span>
-            </div>
-          </div>
+          <!-- Metric chip — created/destroyed by JS, positioned above dashboard -->
+          <div class="hero-metric-chip-anchor" id="heroMetricAnchor"></div>
 
-          <!-- Top-right: Pricing Automation -->
-          <div class="hero-callout hero-callout-tr">
-            <div class="hero-callout-icon hero-callout-icon--cyan">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-            </div>
-            <div class="hero-callout-text">
-              <strong>Pricing Automation</strong>
-              <span>AI repricing that protects margin and wins the buy box.</span>
-            </div>
+          <!-- Marketplace orbit nodes — 9 nodes positioned around the orb -->
+          <!-- Positions mirror the SVG connector endpoints, scaled to % of cluster size -->
+          <div class="hero-node" data-node="shopify"     style="top:3%;  left:50%; transform:translateX(-50%);">
+            <div class="hero-node-inner"><img src="assets/icons/marketplaces/shopify.svg"     alt="Shopify"     width="22" height="22"></div>
+            <span class="hero-node-label">Shopify</span>
           </div>
-
-          <!-- Right-mid: Inventory Sync -->
-          <div class="hero-callout hero-callout-mr">
-            <div class="hero-callout-icon hero-callout-icon--cyan">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.88"/></svg>
-            </div>
-            <div class="hero-callout-text">
-              <strong>Inventory Sync</strong>
-              <span>Real-time inventory across all channels.</span>
-            </div>
+          <div class="hero-node" data-node="amazon"      style="top:11%; right:14%;">
+            <div class="hero-node-inner"><img src="assets/icons/marketplaces/amazon.svg"      alt="Amazon"      width="22" height="22"></div>
+            <span class="hero-node-label">Amazon</span>
           </div>
-
-          <!-- Bottom-right: Oversell Protection -->
-          <div class="hero-callout hero-callout-br">
-            <div class="hero-callout-icon hero-callout-icon--magenta">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
-            </div>
-            <div class="hero-callout-text">
-              <strong>Oversell Protection</strong>
-              <span>Smart rules prevent oversells before they happen.</span>
-            </div>
+          <div class="hero-node" data-node="walmart"     style="top:50%; right:3%;  transform:translateY(-50%);">
+            <div class="hero-node-inner"><img src="assets/icons/marketplaces/walmart.svg"     alt="Walmart"     width="22" height="22"></div>
+            <span class="hero-node-label">Walmart</span>
           </div>
-
-          <!-- Bottom-left: Marketing Feed -->
-          <div class="hero-callout hero-callout-bl">
-            <div class="hero-callout-icon hero-callout-icon--magenta">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/><path d="M12 13v4m-2-2h4"/></svg>
-            </div>
-            <div class="hero-callout-text">
-              <strong>Marketing Feed</strong>
-              <span>Optimized product data that drives more sales.</span>
-            </div>
+          <div class="hero-node" data-node="etsy"        style="bottom:11%; right:14%;">
+            <div class="hero-node-inner"><img src="assets/icons/marketplaces/etsy.svg"        alt="Etsy"        width="22" height="22"></div>
+            <span class="hero-node-label">Etsy</span>
+          </div>
+          <div class="hero-node" data-node="tiktok"      style="bottom:3%; left:50%; transform:translateX(-50%);">
+            <div class="hero-node-inner"><img src="assets/icons/marketplaces/tiktok.svg"      alt="TikTok Shop" width="22" height="22"></div>
+            <span class="hero-node-label">TikTok Shop</span>
+          </div>
+          <div class="hero-node" data-node="ebay"        style="bottom:11%; left:10%;">
+            <div class="hero-node-inner"><img src="assets/icons/marketplaces/ebay.svg"        alt="eBay"        width="22" height="22"></div>
+            <span class="hero-node-label">eBay</span>
+          </div>
+          <div class="hero-node" data-node="google"      style="top:50%; left:2%;   transform:translateY(-50%);">
+            <div class="hero-node-inner"><img src="assets/icons/marketplaces/google.svg"      alt="Google"      width="22" height="22"></div>
+            <span class="hero-node-label">Google</span>
+          </div>
+          <div class="hero-node" data-node="facebook"    style="top:11%; left:10%;">
+            <div class="hero-node-inner"><img src="assets/icons/marketplaces/facebook.svg"    alt="Facebook"    width="22" height="22"></div>
+            <span class="hero-node-label">Facebook</span>
+          </div>
+          <div class="hero-node" data-node="woocommerce" style="top:3%;  left:26%;">
+            <div class="hero-node-inner"><img src="assets/icons/marketplaces/woocommerce.svg" alt="WooCommerce" width="22" height="22"></div>
+            <span class="hero-node-label">WooCommerce</span>
           </div>
 
         </div><!-- /hero-orb-system -->
-
       </div><!-- /hero-visual-cluster -->
-
     </div><!-- /hero-right -->
 
   </div>
@@ -724,6 +663,6 @@
   </div>
 </footer>
 
-<script src="script.js?v=7"></script>
+<script src="script.js?v=19"></script>
 </body>
 </html>
