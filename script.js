@@ -450,6 +450,7 @@ function initHeroRail() {
   const bubbleRight     = document.getElementById('railBubbleRight');
   const bubbleRightIcon = document.getElementById('railBubbleRightIcon');
   const bubbleRightText = document.getElementById('railBubbleRightText');
+  const radarRings      = robot.querySelectorAll('.hero-rail-radar-ring');
 
   // Bubble sequences: [icon path, label]
   const LEFT_BUBBLES = [
@@ -474,9 +475,6 @@ function initHeroRail() {
   let leftIdx  = 0;
   let rightIdx = 0;
 
-  // Travel from one end to the other
-  // progress 0 = left node, 1 = right node
-  // Uses ease-in-out via cubic-bezier approximation with rAF
   function ease(t) {
     return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
   }
@@ -492,11 +490,26 @@ function initHeroRail() {
     const [src, label] = pool[idxRef % pool.length];
     iconEl.src = src;
     textEl.textContent = label;
-    // Reset animation
     bubbleEl.classList.remove('pop');
-    void bubbleEl.offsetWidth; // reflow
+    void bubbleEl.offsetWidth;
     bubbleEl.classList.add('pop');
     return idxRef + 1;
+  }
+
+  function triggerArrival() {
+    // Green strobe flash
+    robot.classList.remove('strobe');
+    void robot.offsetWidth;
+    robot.classList.add('strobe');
+    robot.addEventListener('animationend', () => robot.classList.remove('strobe'), { once: true });
+
+    // Radar rings — staggered via CSS delay, just re-trigger
+    radarRings.forEach(ring => {
+      ring.classList.remove('ping');
+      void ring.offsetWidth;
+      ring.classList.add('ping');
+      ring.addEventListener('animationend', () => ring.classList.remove('ping'), { once: true });
+    });
   }
 
   function travel(fromSide, duration, onDone) {
@@ -504,7 +517,6 @@ function initHeroRail() {
     const toX   = getNodeX(fromSide === 'left' ? 'right' : 'left');
     const start = performance.now();
 
-    // Flip robot to face direction of travel
     if (fromSide === 'left') {
       robot.classList.remove('flipped');
     } else {
@@ -520,6 +532,7 @@ function initHeroRail() {
         requestAnimationFrame(step);
       } else {
         robot.style.left = toX + 'px';
+        triggerArrival();
         onDone && onDone();
       }
     }
