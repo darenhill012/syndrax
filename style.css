@@ -430,7 +430,7 @@ html:not(.dark) .navbar.scrolled {
 
 /* Navbar wordmark image */
 .nav-logo-wordmark {
-  height: 64px;
+  height: 160px;
   width: auto;
   display: block;
   object-fit: contain;
@@ -442,15 +442,15 @@ html.dark .nav-logo-wordmark {
 }
 
 @media (max-width: 1024px) {
-  .nav-logo-wordmark { height: 56px; }
+  .nav-logo-wordmark { height: 140px; }
 }
 
 @media (max-width: 768px) {
-  .nav-logo-wordmark { height: 48px; }
+  .nav-logo-wordmark { height: 120px; }
 }
 
 @media (max-width: 520px) {
-  .nav-logo-wordmark { height: 42px; }
+  .nav-logo-wordmark { height: 100px; }
 }
 
 .nav-links {
