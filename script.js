@@ -669,3 +669,167 @@ function initHeroRail() {
   // Kick off after a short delay so layout is settled
   setTimeout(runCycle, 800);
 }
+
+// ===================== SYNBALL PROXIMITY BEAMS =====================
+(function initSynballBeams() {
+  const canvas = document.getElementById('synball-beam-canvas');
+  if (!canvas) return;
+
+  const ctx = canvas.getContext('2d');
+  const TRIGGER_DIST = 260;   // px from synball center to start beam
+  const BEAM_MAX_W   = 2.2;   // max stroke width
+  const PARTICLE_COUNT = 5;   // sparks per synball when active
+
+  let mouse = { x: -9999, y: -9999 };
+  let rafId = null;
+
+  // Resize canvas to fill viewport
+  function resize() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize, { passive: true });
+
+  // Track mouse globally
+  window.addEventListener('mousemove', e => {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+  }, { passive: true });
+
+  // Gather all synball watermarks — we poll their positions each frame
+  // so they work even after scroll/resize
+  function getSynballs() {
+    return Array.from(document.querySelectorAll('.synball-watermark'));
+  }
+
+  // Per-synball particle state
+  const particleMap = new WeakMap();
+  function getParticles(el) {
+    if (!particleMap.has(el)) {
+      particleMap.set(el, Array.from({ length: PARTICLE_COUNT }, () => newParticle(el, true)));
+    }
+    return particleMap.get(el);
+  }
+
+  function newParticle(el, immediate) {
+    return {
+      progress: immediate ? Math.random() : 0,
+      speed: 0.004 + Math.random() * 0.006,
+      offset: (Math.random() - 0.5) * 18,   // perpendicular jitter
+      width: 0.4 + Math.random() * 1.2,
+      alpha: 0.3 + Math.random() * 0.5,
+    };
+  }
+
+  function getCenter(el) {
+    const r = el.getBoundingClientRect();
+    return { x: r.left + r.width / 2, y: r.top + r.height / 2, r: r.width / 2 };
+  }
+
+  function dist(a, b) {
+    return Math.hypot(a.x - b.x, a.y - b.y);
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const synballs = getSynballs();
+    const mx = mouse.x, my = mouse.y;
+
+    synballs.forEach(el => {
+      const c = getCenter(el);
+      const d = dist(c, { x: mx, y: my });
+      const proximity = 1 - Math.min(d / TRIGGER_DIST, 1); // 0 = far, 1 = touching
+
+      if (proximity <= 0) {
+        el.classList.remove('synball-active');
+        return;
+      }
+
+      el.classList.add('synball-active');
+
+      // Direction vector from synball to mouse
+      const dx = mx - c.x;
+      const dy = my - c.y;
+      const len = Math.hypot(dx, dy) || 1;
+      const nx = dx / len;
+      const ny = dy / len;
+      // Perpendicular
+      const px = -ny;
+      const py =  nx;
+
+      // Beam start: edge of synball circle
+      const startX = c.x + nx * (c.r + 4);
+      const startY = c.y + ny * (c.r + 4);
+      // Beam end: mouse cursor
+      const endX = mx;
+      const endY = my;
+
+      // ---- Main beam ----
+      const beamAlpha = 0.18 + proximity * 0.55;
+      const beamW = 0.6 + proximity * BEAM_MAX_W;
+
+      // Outer glow pass
+      ctx.beginPath();
+      ctx.moveTo(startX, startY);
+      ctx.lineTo(endX, endY);
+      const grad = ctx.createLinearGradient(startX, startY, endX, endY);
+      grad.addColorStop(0, `rgba(0,207,255,${beamAlpha * 0.35})`);
+      grad.addColorStop(0.5, `rgba(0,160,255,${beamAlpha * 0.55})`);
+      grad.addColorStop(1, `rgba(255,255,255,${beamAlpha * 0.8})`);
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = beamW * 3.5;
+      ctx.lineCap = 'round';
+      ctx.filter = 'blur(3px)';
+      ctx.stroke();
+      ctx.filter = 'none';
+
+      // Core beam
+      ctx.beginPath();
+      ctx.moveTo(startX, startY);
+      ctx.lineTo(endX, endY);
+      const coreGrad = ctx.createLinearGradient(startX, startY, endX, endY);
+      coreGrad.addColorStop(0, `rgba(0,230,255,${beamAlpha})`);
+      coreGrad.addColorStop(0.6, `rgba(80,180,255,${beamAlpha * 0.9})`);
+      coreGrad.addColorStop(1, `rgba(255,255,255,${beamAlpha * 0.95})`);
+      ctx.strokeStyle = coreGrad;
+      ctx.lineWidth = beamW;
+      ctx.stroke();
+
+      // ---- Travelling particles along the beam ----
+      const particles = getParticles(el);
+      particles.forEach(p => {
+        p.progress += p.speed * (0.3 + proximity * 0.7);
+        if (p.progress >= 1) {
+          Object.assign(p, newParticle(el, false));
+          p.progress = 0;
+        }
+
+        const t = p.progress;
+        const px_ = startX + (endX - startX) * t + px * p.offset * proximity;
+        const py_ = startY + (endY - startY) * t + py * p.offset * proximity;
+        const sparkAlpha = p.alpha * proximity * Math.sin(Math.PI * t);
+        const sparkR = p.width * (0.5 + proximity * 1.2);
+
+        ctx.beginPath();
+        ctx.arc(px_, py_, sparkR, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(160,230,255,${sparkAlpha})`;
+        ctx.fill();
+      });
+
+      // ---- Cursor hit-point glow ----
+      const hitGrad = ctx.createRadialGradient(mx, my, 0, mx, my, 20 * proximity);
+      hitGrad.addColorStop(0, `rgba(0,220,255,${0.35 * proximity})`);
+      hitGrad.addColorStop(1, 'rgba(0,150,255,0)');
+      ctx.beginPath();
+      ctx.arc(mx, my, 20 * proximity, 0, Math.PI * 2);
+      ctx.fillStyle = hitGrad;
+      ctx.fill();
+    });
+
+    rafId = requestAnimationFrame(draw);
+  }
+
+  draw();
+})();
