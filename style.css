@@ -4390,6 +4390,7 @@ footer {
   .product-visual { aspect-ratio: auto; padding: 40px; }
   .hermes-card { grid-template-columns: 1fr; gap: 40px; }
   .hermes-avatar-wrap { flex-direction: row; justify-content: center; }
+  .hermes-pulse, .hermes-pulse-2 { display: none; }
   .trust-grid { grid-template-columns: 1fr 1fr; }
   .hero-content { gap: 28px; padding: 0 28px; grid-template-columns: 1fr 1fr; }
   .hero-dash, .hero-demo-wrap { width: clamp(260px, 28vw, 340px); }
@@ -4549,6 +4550,8 @@ footer {
   .mission-card { padding: 28px; }
   .hero-content { padding: 0 16px; }
   .hero-dash { padding: 18px 16px; }
+  .hermes-pulse,
+  .hermes-pulse-2 { display: none; }
   .hero-integrations { gap: 8px; margin-top: 28px; }
 }
 
