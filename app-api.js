@@ -252,10 +252,13 @@ export async function claimTracking(payload) {
   // No offline fallback — claiming spends a real credit and must hit the server.
   return await api('/api/tracking/claim', { method: 'POST', body: JSON.stringify(payload) });
 }
+export async function trackingCheckout(pack) {
+  return await api('/api/tracking/checkout', { method: 'POST', body: JSON.stringify({ pack }) });
+}
 
 window.SyndraxApp = {
   getProfile, saveProfile, getMarketplaces, addMarketplaceAccount, removeMarketplaceAccount,
   getAudit, startTrial, getNodes, saveNode, updateNode, getAddons, addAddon, removeAddon,
   getSales, postSales, getInventory, getInventorySummary, syncInventory, deleteInventoryItem,
-  getTrackingBalance, getTrackingOrders, postTrackingOrders, updateTrackingOrder, claimTracking,
+  getTrackingBalance, getTrackingOrders, postTrackingOrders, updateTrackingOrder, claimTracking, trackingCheckout,
 };

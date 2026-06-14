@@ -10,7 +10,7 @@ import {
   removeMarketplaceAccount, getAudit, startTrial,
   getNodes, saveNode, updateNode, getAddons, addAddon, removeAddon,
   getSales, postSales, getInventory, getInventorySummary, syncInventory, deleteInventoryItem,
-  getTrackingBalance, getTrackingOrders, postTrackingOrders, updateTrackingOrder, claimTracking,
+  getTrackingBalance, getTrackingOrders, postTrackingOrders, updateTrackingOrder, claimTracking, trackingCheckout,
 } from '/app-api.js';
 import {
   PLAN_LABEL, PLAN_PRICE, PLAN_TAGLINE, PLAN_LIMITS,
@@ -1369,15 +1369,27 @@ function paintTracking(content, orders) {
     <div class="audit-finding"><div class="f-title" style="font-family:ui-monospace,monospace;font-size:12px;color:#6ee7b7">${esc(c.trackingNumber)}</div>
     <div class="f-detail">${esc(marketplace(c.marketplace)?.name || c.marketplace || '—')} · ${esc(c.carrier || 'carrier')} · order ${esc(c.orderId || '—')} · ${c.createdAt ? new Date(c.createdAt).toLocaleDateString() : ''}</div></div>`).join('');
 
+  // Credits stay low-key: a normal user with plenty of allowance never sees a
+  // top-up prompt. It only appears when they're actually running low.
+  const lowCredits = bal.configured && bal.credits <= 10;
+  const packs = bal.packs || [];
+  const topUp = (lowCredits && packs.length) ? `
+    <div class="wf-note" style="margin-bottom:16px;${bal.credits === 0 ? 'color:#fca5a5;border-color:rgba(248,113,113,.3);background:rgba(248,113,113,.06)' : ''}">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <span>${bal.credits === 0 ? 'Your tracking allowance is used up for this month.' : `Tracking allowance running low (${bal.credits} left).`} Top up to keep auto-pushing tracking — no interruption to fulfillment.</span>
+        <span style="display:flex;gap:8px">${packs.map(p => `<button class="app-btn sm" data-buycredits="${esc(p.id)}">${esc(p.label)}</button>`).join('')}</span>
+      </div>
+    </div>` : '';
+
   content.innerHTML = `
     <div class="home-grid" style="margin-bottom:16px">
-      ${stat('Credits', String(bal.credits), 'truck', bal.credits ? 'up' : 'down', bal.configured ? `${bal.allotment}/mo on ${PLAN_LABEL[plan]}` : 'API not configured')}
+      ${stat('Tracking left', String(bal.credits), 'truck', bal.credits > 10 ? 'up' : (bal.configured ? 'down' : ''), bal.configured ? `${bal.allotment}/mo included` : 'not set up yet')}
       ${stat('Pending', String(pending.length), 'truck', '', 'awaiting tracking')}
       ${stat('Claimed', String(claimed.length), 'truck', '', 'ready to push')}
       ${stat('Synced', String(synced.length), 'truck', synced.length ? 'up' : '', 'pushed to buyer')}
     </div>
-    ${!bal.configured ? `<div class="wf-note" style="margin-bottom:16px">Tracking isn't live yet — add your <b>TrackCaptain</b> API key to the cloud and credits start flowing. Until then, orders collect here as <b>pending</b>.</div>` : ''}
-    ${bal.configured && bal.credits === 0 ? `<div class="wf-note" style="margin-bottom:16px;color:#fca5a5;border-color:rgba(248,113,113,.3);background:rgba(248,113,113,.06)">Out of tracking credits. Your ${PLAN_LABEL[plan]} plan grants ${bal.allotment}/month${can('team') ? '' : ' — upgrade for more'}.</div>` : ''}
+    ${!bal.configured ? `<div class="wf-note" style="margin-bottom:16px">Auto-tracking isn't live yet — once it's set up, the delivery date + a tracking number sync to each order automatically. Until then, orders collect here.</div>` : ''}
+    ${topUp}
     ${ordersTable(pending, 'Pending orders')}
     ${ordersTable(claimed, 'Claimed — ready to push')}
     ${ordersTable(synced, 'Synced')}
@@ -1386,6 +1398,11 @@ function paintTracking(content, orders) {
 
   content.querySelectorAll('[data-claim]').forEach(b => b.onclick = () => claimForOrder(orders.find(o => String(o.id) === b.dataset.claim), content));
   content.querySelectorAll('[data-push]').forEach(b => b.onclick = () => pushTrackingToMarketplace(orders.find(o => String(o.id) === b.dataset.push), content));
+  content.querySelectorAll('[data-buycredits]').forEach(b => b.onclick = async () => {
+    b.disabled = true; b.textContent = 'Opening checkout…';
+    try { const r = await trackingCheckout(b.dataset.buycredits); if (r && r.url) location.href = r.url; else { b.disabled = false; showAlert('Could not open checkout.'); } }
+    catch (e) { b.disabled = false; showAlert(e.message || 'Could not open checkout.'); }
+  });
 }
 
 async function claimForOrder(o, content) {
