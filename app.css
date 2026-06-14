@@ -487,3 +487,100 @@ html.dark .wiz-logo img { mix-blend-mode: screen; }
 .device-status.missing .ds-icon { background: rgba(148,163,184,.12); color: #cbd5e1; }
 .device-status .ds-title { font-weight: 700; color: var(--text); font-size: 14px; }
 .device-status .ds-sub { color: var(--text-gray); font-size: 12.5px; margin-top: 2px; }
+
+/* ════════════════════════════════════════════════════════════════════════
+   PREMIUM CYBER THEME (v2) — overrides for a high-end, futuristic feel
+   ════════════════════════════════════════════════════════════════════════ */
+.dash {
+  background:
+    radial-gradient(1200px 620px at 10% -12%, rgba(34,211,238,.12), transparent 60%),
+    radial-gradient(1000px 600px at 102% -4%, rgba(217,70,239,.11), transparent 55%),
+    radial-gradient(900px 800px at 50% 118%, rgba(99,102,241,.10), transparent 60%),
+    #04060e;
+}
+.dash::before { /* fine grid, faded toward edges */
+  content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255,255,255,.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.028) 1px, transparent 1px);
+  background-size: 46px 46px;
+  -webkit-mask-image: radial-gradient(circle at 50% 36%, #000 28%, transparent 86%);
+  mask-image: radial-gradient(circle at 50% 36%, #000 28%, transparent 86%);
+}
+.dash::after { /* slow drifting aurora */
+  content: ''; position: fixed; inset: -25%; z-index: 0; pointer-events: none; opacity: .55;
+  background:
+    radial-gradient(38% 38% at 22% 28%, rgba(34,211,238,.13), transparent 70%),
+    radial-gradient(40% 40% at 80% 64%, rgba(217,70,239,.11), transparent 70%);
+  animation: sx-aurora 20s ease-in-out infinite alternate;
+}
+@keyframes sx-aurora { 0% { transform: translate3d(0,0,0) scale(1); } 100% { transform: translate3d(0,-3%,0) scale(1.06); } }
+.dash-rail, .dash-body { position: relative; z-index: 1; }
+
+/* Sidebar — glass + neon active state */
+.dash-rail { background: linear-gradient(180deg, rgba(10,16,28,.86), rgba(6,10,20,.82)); backdrop-filter: blur(18px); border-right: 1px solid rgba(255,255,255,.06); }
+.dash-nav { position: relative; }
+.dash-nav.active { background: linear-gradient(90deg, rgba(34,211,238,.18), rgba(217,70,239,.06)); color: #a5f3ff; box-shadow: inset 0 0 0 1px rgba(34,211,238,.22), 0 0 20px rgba(34,211,238,.12); }
+.dash-nav.active::before { content: ''; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px; border-radius: 999px; background: linear-gradient(#22d3ee,#d946ef); box-shadow: 0 0 12px rgba(34,211,238,.7); }
+
+/* Topbar glass + gradient title */
+.dash-top { background: rgba(8,12,22,.55); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255,255,255,.06); }
+.dash-top h2 { background: linear-gradient(90deg,#eafcff,#bcd0e0); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+
+/* Glass surfaces with a gradient hairline + depth (neutral panels only) */
+.panel, .app-card, .stat, .chart-card, .node-card, .trust-card, .mk-tile {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.013)) padding-box,
+    linear-gradient(135deg, rgba(34,211,238,.28), rgba(217,70,239,.16) 55%, rgba(255,255,255,.05)) border-box;
+  border: 1px solid transparent;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 12px 34px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.05);
+}
+.app-card:hover, .stat:hover, .node-card:hover, .mk-tile:hover, .script-card.ready:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 44px rgba(0,0,0,.5), 0 0 0 1px rgba(34,211,238,.32), 0 0 30px rgba(34,211,238,.16);
+}
+
+/* Neon numerics */
+.stat .s-val, .plan-name {
+  background: linear-gradient(135deg,#bdf6ff,#67e8f9 42%,#f5b8ff);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 24px rgba(34,211,238,.2);
+}
+
+/* Buttons — gradient + animated sheen + glow */
+.app-btn { background: linear-gradient(120deg,#22d3ee,#3b82f6 46%,#d946ef); box-shadow: 0 8px 24px rgba(34,211,238,.3), inset 0 1px 0 rgba(255,255,255,.28); position: relative; overflow: hidden; }
+.app-btn::after { content: ''; position: absolute; top: 0; left: -60%; width: 38%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.4), transparent); transform: skewX(-20deg); transition: left .6s ease; }
+.app-btn:hover::after { left: 135%; }
+.app-btn.ghost { background: rgba(255,255,255,.045); box-shadow: none; backdrop-filter: blur(8px); }
+.app-btn.ghost:hover { box-shadow: 0 0 0 1px rgba(34,211,238,.35), 0 0 18px rgba(34,211,238,.12); }
+
+/* Tool cards — neon edge when live */
+.script-card.ready {
+  background:
+    linear-gradient(180deg, rgba(34,211,238,.10), rgba(34,211,238,.02)) padding-box,
+    linear-gradient(135deg, rgba(34,211,238,.5), rgba(217,70,239,.25)) border-box;
+  border: 1px solid transparent;
+}
+.script-card.ready svg { filter: drop-shadow(0 0 6px rgba(34,211,238,.5)); }
+
+/* Workflow flow steps glow */
+.wf-step { box-shadow: 0 0 18px rgba(34,211,238,.14); }
+.wf-acc.on { box-shadow: 0 0 16px rgba(34,211,238,.18); }
+
+/* Plan chips glow */
+.app-plan-chip { backdrop-filter: blur(6px); }
+.app-plan-chip.plan-enterprise { box-shadow: 0 0 18px rgba(251,191,36,.28); }
+.app-plan-chip.plan-growth { box-shadow: 0 0 16px rgba(16,185,129,.22); }
+
+/* Admin sandbox bar — richer */
+.admin-bar { background: linear-gradient(90deg, rgba(217,70,239,.16), rgba(34,211,238,.08)); border-bottom: 1px solid rgba(255,255,255,.08); backdrop-filter: blur(10px); }
+.admin-seg button.on { box-shadow: inset 0 0 0 1px rgba(34,211,238,.3), 0 0 14px rgba(34,211,238,.15); }
+
+/* Scrollbar */
+.dash-content::-webkit-scrollbar, .ws-left::-webkit-scrollbar { width: 9px; }
+.dash-content::-webkit-scrollbar-thumb, .ws-left::-webkit-scrollbar-thumb { background: linear-gradient(#1e3a4a,#2a2150); border-radius: 999px; border: 2px solid transparent; background-clip: padding-box; }
+.dash-content::-webkit-scrollbar-track { background: transparent; }
+
+/* Headings use the display font tighter */
+.app-h1, .wf-stage-h span, .dash-top h2 { letter-spacing: -0.4px; }

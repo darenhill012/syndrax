@@ -7,7 +7,7 @@
     'olhecndljgbocfkdejkcppadadmfiojo', // dev / keyed / unpacked (stable)
     'mgapfpdkkihbeehfkgoajhealmgpnglo', // Chrome Web Store
   ];
-  var LATEST_VERSION = '1.1.1'; // bump on each extension release
+  var LATEST_VERSION = '1.1.2'; // bump on each extension release
   var STORE_URL = 'https://chromewebstore.google.com/detail/mgapfpdkkihbeehfkgoajhealmgpnglo';
 
   function ping(id) {
@@ -73,10 +73,22 @@
     document.body.appendChild(bar);
   }
 
-  async function run() {
-    var r = await detect();
+  function publish(r) {
     window.SyndraxExt = { installed: r.installed, version: r.version, id: r.id, latest: LATEST_VERSION, detect: detect };
     document.dispatchEvent(new CustomEvent('syndrax-ext', { detail: window.SyndraxExt }));
+  }
+
+  async function run() {
+    var r = await detect();
+    publish(r);
+    // MV3 background service workers go to sleep — the first ping after a cold
+    // page load often misses. Retry for a few seconds and re-publish so the app
+    // flips to "connected" once the worker wakes (covers Web Store + dev builds).
+    for (var i = 0; i < 6 && !r.installed; i++) {
+      await new Promise(function (res) { setTimeout(res, 800); });
+      r = await detect();
+      if (r.installed) publish(r);
+    }
 
     if (!r.installed) {
       showBanner('install', 'Install the Syndrax extension to run your cluster.', 'Add to Chrome', STORE_URL);
