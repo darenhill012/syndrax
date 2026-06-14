@@ -727,5 +727,13 @@
 <script src="script.js?v=20"></script>
 <script src="extension-check.js?v=1"></script>
   <script type="module" src="/nav-auth.js"></script>
+  <script type="module">
+    import { handleOAuthCallback } from '/auth-cognito.js';
+    if (window.location.search.includes('code=')) {
+      handleOAuthCallback().then(session => {
+        if (session) window.location.href = '/account.html';
+      });
+    }
+  </script>
 </body>
 </html>

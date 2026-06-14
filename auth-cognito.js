@@ -180,3 +180,43 @@ export function googleRedirect(redirectPath = '/') {
     `&identity_provider=Google`;
   window.location.href = url;
 }
+
+// Exchange the ?code= from Cognito's OAuth callback for tokens.
+// Call this on the page that Cognito redirects back to (e.g. index.html).
+// Returns the session if successful, null if no code in URL.
+export async function handleOAuthCallback() {
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('code');
+  if (!code) return null;
+
+  // Clean the URL immediately so refresh doesn't re-submit the code
+  const cleanUrl = window.location.pathname;
+  window.history.replaceState({}, '', cleanUrl);
+
+  const redirectUri = window.location.origin + '/';
+  const body = new URLSearchParams({
+    grant_type: 'authorization_code',
+    client_id: COGNITO.clientId,
+    code,
+    redirect_uri: redirectUri,
+  });
+
+  const res = await fetch(`https://${COGNITO.hostedUiDomain}/oauth2/token`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: body.toString(),
+  });
+
+  if (!res.ok) {
+    console.error('OAuth token exchange failed', await res.text());
+    return null;
+  }
+
+  const data = await res.json();
+  return saveSession({
+    IdToken: data.id_token,
+    AccessToken: data.access_token,
+    RefreshToken: data.refresh_token,
+    ExpiresIn: data.expires_in,
+  });
+}
