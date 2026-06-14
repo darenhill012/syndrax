@@ -71,6 +71,7 @@ let profile = {};
 let accounts = [];
 let jobs = loadJobs();
 let activeTab = 'home';
+let selectedTarget = null; // target account id for marketplace-aware scripts
 let selectedJobId = null;
 let railOpen = false;
 let ext = window.SyndraxExt || { installed: false };
@@ -106,13 +107,41 @@ const SCRIPTS = [
 // ── boot ────────────────────────────────────────────────────────────────────
 function applyPlan() { plan = (isAdmin && previewPlan) ? previewPlan : realPlan; }
 
+// Pull REAL marketplace accounts the extension already manages on this device
+// (e.g. Oleg's existing eBay accounts) and merge them in — so /app shows real
+// data automatically, no manual re-entry. Best-effort; no-op without the ext.
+function syncExtensionAccounts() {
+  return new Promise((resolve) => {
+    const extId = ext.id || EXT_IDS[0];
+    if (!(window.chrome && chrome.runtime && chrome.runtime.sendMessage && ext.installed)) return resolve();
+    try {
+      chrome.runtime.sendMessage(extId, { type: 'SYNDRAX_GET_STATE' }, (resp) => {
+        if (chrome.runtime.lastError || !resp || !resp.ok) return resolve();
+        const synced = (resp.accounts || []).map(a => ({
+          id: 'ext-' + (a.id || a.username), marketplace: a.platform || 'ebay',
+          label: a.username || a.platform || 'account', deviceId: a.nodeId || 'this-device',
+          status: 'connected', synced: true, tier: a.tier, mode: a.mode,
+        }));
+        // Merge: keep cloud accounts, add synced ones not already present (by label+marketplace).
+        const seen = new Set(accounts.map(a => a.marketplace + '|' + (a.label || '').toLowerCase()));
+        for (const s of synced) {
+          const key = s.marketplace + '|' + s.label.toLowerCase();
+          if (!seen.has(key)) { accounts.push(s); seen.add(key); }
+        }
+        resolve();
+      });
+    } catch { resolve(); }
+  });
+}
+
 async function boot() {
   try { statusRow = await getStatus(); realPlan = statusRow.plan || 'none'; } catch { realPlan = 'none'; }
   applyPlan();
   try { profile = await getProfile(); } catch { profile = {}; }
   if (!profile.onboarding_complete && realPlan === 'none' && !isAdmin) { location.replace('/onboarding'); return; }
   try { const mk = await getMarketplaces(); accounts = mk.accounts || []; } catch { accounts = []; }
-  document.addEventListener('syndrax-ext', () => { ext = window.SyndraxExt || ext; renderShell(); });
+  await syncExtensionAccounts();
+  document.addEventListener('syndrax-ext', () => { ext = window.SyndraxExt || ext; syncExtensionAccounts().then(renderShell); });
   renderShell();
 }
 
@@ -214,15 +243,21 @@ function renderUpgradeLock(feature) {
 // ── HOME / OVERVIEW ───────────────────────────────────────────────────────────
 const fmt$ = (n) => '$' + Math.round(n).toLocaleString();
 
-// Sample performance series, scaled by plan, until live sales sync is wired from
-// the connected accounts. Clearly labelled "sample" in the UI.
+const previewMode = () => isAdmin && !!previewPlan;
+
+// Performance series. SAMPLE numbers appear ONLY in admin preview (to showcase a
+// plan); the real view never shows fake profit — it shows real synced data, or an
+// honest empty state until a sales sync lands.
 function salesSeries() {
-  const scale = { trial: 0.6, business: 1, growth: 2.6, enterprise: 6, none: 0.4 }[plan] || 1;
-  const baseGross = [340, 420, 390, 520, 610, 560, 720, 880];
   const labels = ['W1', 'W2', 'W3', 'W4', 'W5', 'W6', 'W7', 'W8'];
-  const gross = baseGross.map(v => Math.round(v * scale));
-  const net = gross.map(v => Math.round(v * 0.42));
-  return { labels, gross, net, grossTotal: gross.reduce((a, b) => a + b, 0), netTotal: net.reduce((a, b) => a + b, 0), sample: true };
+  if (previewMode()) {
+    const scale = { trial: 0.6, business: 1, growth: 2.6, enterprise: 6, none: 0.4 }[plan] || 1;
+    const gross = [340, 420, 390, 520, 610, 560, 720, 880].map(v => Math.round(v * scale));
+    const net = gross.map(v => Math.round(v * 0.42));
+    return { labels, gross, net, grossTotal: gross.reduce((a, b) => a + b, 0), netTotal: net.reduce((a, b) => a + b, 0), sample: true };
+  }
+  // Real view: no live sales pipeline yet → empty. NEVER fabricate numbers here.
+  return { labels, gross: [], net: [], grossTotal: 0, netTotal: 0, empty: true };
 }
 
 function areaChart(labels, sets) {
@@ -266,9 +301,10 @@ function renderHome() {
   const content = $('#content');
   const incomplete = accounts.length === 0;
   const s = salesSeries();
-  const activeAccts = accounts.length || ({ trial: 1, business: 1, growth: 3, enterprise: 8, none: 0 }[plan] || 0);
-  const orders = Math.round(s.grossTotal / 42);
+  const activeAccts = previewMode() ? ({ trial: 1, business: 1, growth: 3, enterprise: 8 }[plan] || 1) : accounts.length;
+  const orders = s.empty ? 0 : Math.round(s.grossTotal / 42);
   const margin = s.grossTotal ? Math.round(s.netTotal / s.grossTotal * 100) : 0;
+  const flat = [0, 0, 0, 0, 0, 0, 0, 0];
 
   content.innerHTML = `
     ${incomplete ? `<div class="setup-strip">
@@ -279,19 +315,21 @@ function renderHome() {
     </div>` : ''}
 
     <div class="home-grid">
-      ${stat('Gross (8 wk)', fmt$(s.grossTotal), 'cash', 'up', '↑ 12% vs prev')}
-      ${stat('Net profit', fmt$(s.netTotal), 'cash', 'up', margin + '% margin')}
-      ${stat('Orders', orders.toLocaleString(), 'briefcase', '', 'across your accounts')}
+      ${stat('Gross (8 wk)', s.empty ? '$0' : fmt$(s.grossTotal), 'cash', s.empty ? '' : 'up', s.empty ? 'no sales yet' : '↑ 12% vs prev')}
+      ${stat('Net profit', s.empty ? '$0' : fmt$(s.netTotal), 'cash', s.empty ? '' : 'up', s.empty ? '—' : margin + '% margin')}
+      ${stat('Orders', s.empty ? '0' : orders.toLocaleString(), 'briefcase', '', 'across your accounts')}
       ${stat('Active accounts', String(activeAccts), 'tag', '', PLAN_LABEL[plan])}
     </div>
 
     <div class="chart-card">
       <div class="chart-head">
-        <h3>Performance ${s.sample ? '<span class="mk-badge soon" style="position:static;margin-left:6px">sample</span>' : ''}</h3>
+        <h3>Performance ${s.sample ? '<span class="mk-badge soon" style="position:static;margin-left:6px">admin sample</span>' : ''}</h3>
         <div class="chart-legend"><span><i style="background:#22d3ee"></i>Gross</span><span><i style="background:#d946ef"></i>Net</span></div>
       </div>
-      ${areaChart(s.labels, [{ name: 'Gross', color: '#22d3ee', data: s.gross }, { name: 'Net', color: '#d946ef', data: s.net }])}
-      ${s.sample ? '<div style="font-size:11px;color:#475569;margin-top:6px">Sample numbers — your live net/gross appears here once your connected accounts sync.</div>' : ''}
+      ${s.empty
+        ? `<div style="position:relative">${areaChart(s.labels, [{ name: 'Gross', color: '#22d3ee', data: flat }])}<div class="chart-empty">${icon('chart')}<div style="font-weight:700;color:#cbd5e1">No sales data yet</div><div style="font-size:12px">Connect an account and run a sync — your real net &amp; gross appear here.</div></div></div>`
+        : areaChart(s.labels, [{ name: 'Gross', color: '#22d3ee', data: s.gross }, { name: 'Net', color: '#d946ef', data: s.net }])}
+      ${s.sample ? '<div style="font-size:11px;color:#475569;margin-top:6px">Admin preview only — sample numbers to show how this plan looks. Real accounts always show real data.</div>' : ''}
     </div>
 
     <div class="panel">
@@ -305,9 +343,22 @@ function renderHome() {
 }
 
 // ── WORKSPACE ─────────────────────────────────────────────────────────────────
+// Scripts are marketplace-aware: they run against a TARGET account so they know
+// what they're listing/syncing to. eBay is live today; other marketplaces show
+// the same scripts but flagged "building" until their sync ships — never faked.
+const LIVE_MARKETPLACES = ['ebay'];
+let wsTarget = null;
+
 function renderWorkspace() {
   $('#topSub').textContent = ext.installed ? '· running on this device' : '· install the extension to run jobs';
   const job = jobs.find(j => j.jobId === selectedJobId) || null;
+
+  // Resolve the current target account (what scripts will act on).
+  wsTarget = accounts.find(a => a.id === selectedTarget) || accounts[0] || null;
+  const targetMk = wsTarget ? wsTarget.marketplace : null;
+  const scriptsLive = !!targetMk && LIVE_MARKETPLACES.includes(targetMk);
+  const mkName = targetMk ? (marketplace(targetMk)?.name || targetMk) : null;
+
   $('#content').innerHTML = `
     <div class="ws">
       <div class="ws-left">
@@ -318,19 +369,39 @@ function renderWorkspace() {
             <span class="dev-name">This PC</span>
             <span class="dev-meta">${ext.installed ? 'Extension v' + (ext.version || '') : 'main workstation'}</span>
           </div>
-          ${can('multiDevice') ? `<p style="font-size:11px;color:#64748b;margin-top:10px">Remote devices appear here via the extension relay.</p>` : `<p style="font-size:11px;color:#64748b;margin-top:10px">Business runs on this one device. Upgrade to add more.</p>`}
         </div>
 
         <div class="panel">
-          <div class="panel-h">Scripts</div>
+          <div class="panel-h">Target account ${mkName ? `<span style="color:#64748b;font-weight:500;text-transform:none;letter-spacing:0">scripts act on ${esc(mkName)}</span>` : ''}</div>
+          ${accounts.length === 0
+            ? `<p style="font-size:12px;color:#64748b">No accounts yet. <span class="link" data-go="accounts">Connect one →</span></p>`
+            : accounts.map(a => {
+              const m = marketplace(a.marketplace);
+              const logo = marketplaceLogo(a.marketplace) || `<span style="font:800 13px var(--nav-font);color:#fff">${(m?.name || '?')[0]}</span>`;
+              const on = wsTarget && wsTarget.id === a.id;
+              const live = LIVE_MARKETPLACES.includes(a.marketplace);
+              return `<div class="dev-row ${on ? 'sel' : ''}" data-target="${a.id}">
+                <span class="mk-chip neutral" style="width:26px;height:26px">${logo}</span>
+                <span class="dev-name">${esc(a.label || m?.name || a.marketplace)}</span>
+                <span class="dev-meta">${esc(m?.name || a.marketplace)}${live ? ' · live' : ' · building'}${a.synced ? ' · synced' : ''}</span>
+              </div>`;
+            }).join('')}
+        </div>
+
+        <div class="panel">
+          <div class="panel-h">Scripts ${mkName ? `<span style="color:#64748b;font-weight:500;text-transform:none;letter-spacing:0">for ${esc(mkName)}</span>` : ''}</div>
+          ${!wsTarget ? `<p style="font-size:12px;color:#64748b">Connect a marketplace account to run scripts.</p>` : `
+          ${!scriptsLive ? `<p style="font-size:11.5px;color:#fcd34d;margin-bottom:10px">${esc(mkName)} scripts are being built — eBay is live today. The same tools will light up here once ${esc(mkName)} sync ships.</p>` : ''}
           <div class="script-grid">
-            ${SCRIPTS.map(s => `
-              <button class="script-card ${s.ready ? 'ready' : 'soon'}" data-script="${s.key}" ${s.ready ? '' : 'disabled'} title="${s.ready ? 'Run ' + s.label : 'Coming soon'}">
+            ${SCRIPTS.map(s => {
+              const enabled = s.ready && scriptsLive;
+              return `<button class="script-card ${enabled ? 'ready' : 'soon'}" data-script="${s.key}" ${enabled ? '' : 'disabled'} title="${enabled ? 'Run ' + s.label + ' on ' + mkName : (!scriptsLive ? mkName + ' — building' : 'coming soon')}">
                 ${icon(s.icon)}
                 <span class="sc-name">${s.label}</span>
-                <span class="sc-desc">${s.ready ? esc(s.desc) : 'coming soon'}</span>
-              </button>`).join('')}
-          </div>
+                <span class="sc-desc">${enabled ? esc(s.desc) : (!scriptsLive ? 'building for ' + esc(mkName) : 'coming soon')}</span>
+              </button>`;
+            }).join('')}
+          </div>`}
         </div>
 
         <div class="panel" style="flex:1">
@@ -345,6 +416,8 @@ function renderWorkspace() {
       </div>
     </div>`;
 
+  $('#content').querySelectorAll('[data-target]').forEach(b => b.onclick = () => { selectedTarget = b.dataset.target; renderWorkspace(); });
+  $('#content').querySelectorAll('[data-go]').forEach(b => b.onclick = () => { activeTab = b.dataset.go; renderShell(); });
   $('#content').querySelectorAll('[data-script]').forEach(b => b.onclick = () => { configuring = b.dataset.script; openScriptModal(); });
   $('#content').querySelectorAll('[data-job]').forEach(b => b.onclick = () => { selectedJobId = b.dataset.job; renderWorkspace(); });
   const cj = $('#clearJobs'); if (cj) cj.onclick = () => { jobs = []; saveJobs(); selectedJobId = null; renderWorkspace(); };
@@ -377,17 +450,25 @@ function jobDetail(j) {
 
 // ── job dispatch (to the extension = backend) ──────────────────────────────────
 function dispatch(script, scriptLabel, args) {
+  const mk = wsTarget ? wsTarget.marketplace : 'ebay';
+  const mkName = marketplace(mk)?.name || mk;
   const jobId = 'job-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 6);
   const job = {
-    jobId, script, scriptLabel, deviceName: 'This PC',
+    jobId, script, scriptLabel: `${scriptLabel} → ${mkName}`, deviceName: 'This PC', marketplace: mk,
     status: 'dispatched', createdAt: Date.now(), updatedAt: Date.now(),
-    progress: null, message: '', log: [{ t: Date.now(), text: 'dispatched to this device' }],
+    progress: null, message: '', log: [{ t: Date.now(), text: `dispatched to this device · target ${mkName} (${wsTarget?.label || '—'})` }],
   };
   jobs.unshift(job); saveJobs(); selectedJobId = jobId; configuring = null; renderWorkspace();
 
+  // Non-live marketplaces: don't fake it — mark the job as building.
+  if (!LIVE_MARKETPLACES.includes(mk)) {
+    patchJob(jobId, 'no-device', `${mkName} sync is still being built — eBay is live today.`);
+    return;
+  }
+
   const extId = ext.id || EXT_IDS[0];
   if (window.chrome && chrome.runtime && chrome.runtime.sendMessage && ext.installed) {
-    chrome.runtime.sendMessage(extId, { type: 'SYNDRAX_RUN', script, args, jobId }, (resp) => {
+    chrome.runtime.sendMessage(extId, { type: 'SYNDRAX_RUN', script, marketplace: mk, args: { ...args, marketplace: mk, account: wsTarget?.label }, jobId }, (resp) => {
       if (chrome.runtime.lastError || !resp || !resp.ok) {
         patchJob(jobId, 'error', (resp && resp.error) || (chrome.runtime.lastError && 'extension unavailable') || 'extension did not accept the job');
       } else {
@@ -413,8 +494,8 @@ function openScriptModal() {
   host.className = 'modal-bg'; host.id = 'scriptModal';
   host.innerHTML = `
     <div class="modal" onclick="event.stopPropagation()">
-      <h3>${icon('upload')} Run Lister on This PC</h3>
-      <p class="modal-sub">Paste source URLs or product IDs — the Lister adapts to your connected marketplace and lists them via the extension.</p>
+      <h3>${icon('upload')} Run Lister → ${esc(marketplace(wsTarget?.marketplace)?.name || 'eBay')}</h3>
+      <p class="modal-sub">Listing to <b style="color:#cbd5e1">${esc(wsTarget?.label || 'your account')}</b> on ${esc(marketplace(wsTarget?.marketplace)?.name || 'eBay')}. Paste source URLs or product IDs — the Lister adapts to this marketplace and runs via the extension on this device.</p>
       <label>Amazon URLs or ASINs</label>
       <textarea id="bArgs" rows="5" placeholder="B00RW5OWLE&#10;https://amazon.com/dp/B0..." style="font-family:ui-monospace,monospace;font-size:12px"></textarea>
       <div class="modal-row">
