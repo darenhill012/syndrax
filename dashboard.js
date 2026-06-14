@@ -21,6 +21,9 @@ const JOBS_KEY = 'syndrax_web_jobs_v1';
 // ── icons (inline, lucide-ish) ───────────────────────────────────────────────
 const P = 'fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
 const ICONS = {
+  home: `<svg viewBox="0 0 24 24" ${P}><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9 21v-6h6v6"/></svg>`,
+  chart: `<svg viewBox="0 0 24 24" ${P}><path d="M3 3v18h18"/><path d="M7 14l3-4 3 3 5-7"/></svg>`,
+  cash: `<svg viewBox="0 0 24 24" ${P}><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>`,
   rocket: `<svg viewBox="0 0 24 24" ${P}><path d="M4.5 16.5c-1.5 1.3-2 5-2 5s3.7-.5 5-2c.7-.8.7-2 0-2.8a2 2 0 0 0-3 0z"/><path d="M12 15l-3-3a22 22 0 0 1 8-10c2 0 4 2 4 4a22 22 0 0 1-9 9z"/><path d="M9 12H4s.5-3 2-4 5 0 5 0"/></svg>`,
   tag: `<svg viewBox="0 0 24 24" ${P}><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0l-7.8-7.8V3h9.8l8 8a2 2 0 0 1 0 2.4z"/><circle cx="7.5" cy="7.5" r="1.3"/></svg>`,
   briefcase: `<svg viewBox="0 0 24 24" ${P}><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>`,
@@ -54,12 +57,19 @@ if (!session) location.replace('/login');
 let email = '';
 try { email = JSON.parse(atob(session.idToken.split('.')[1])).email || ''; } catch {}
 
-let plan = 'none';
+// Admin can preview each plan's dashboard live.
+const ADMIN_EMAILS = ['olegperchatkin@gmail.com'];
+const isAdmin = ADMIN_EMAILS.includes(email.toLowerCase());
+const PREVIEW_KEY = 'syndrax_admin_preview_plan';
+
+let plan = 'none';        // effective plan (preview override for admin, else real)
+let realPlan = 'none';    // the account's actual plan
+let previewPlan = isAdmin ? (localStorage.getItem(PREVIEW_KEY) || null) : null;
 let statusRow = { plan: 'none' };
 let profile = {};
 let accounts = [];
 let jobs = loadJobs();
-let activeTab = 'workspace';
+let activeTab = 'home';
 let selectedJobId = null;
 let railOpen = false;
 let ext = window.SyndraxExt || { installed: false };
@@ -75,6 +85,7 @@ function can(feature) {
 }
 
 const TABS = [
+  { id: 'home', label: 'Home', icon: 'home', sec: 'Mission Control' },
   { id: 'workspace', label: 'Workspace', icon: 'rocket', sec: 'Mission Control' },
   { id: 'accounts', label: 'Accounts', icon: 'tag', sec: 'Mission Control' },
   { id: 'jobs', label: 'Jobs', icon: 'briefcase', sec: 'Operations' },
@@ -92,10 +103,13 @@ const SCRIPTS = [
 ];
 
 // ── boot ────────────────────────────────────────────────────────────────────
+function applyPlan() { plan = (isAdmin && previewPlan) ? previewPlan : realPlan; }
+
 async function boot() {
-  try { statusRow = await getStatus(); plan = statusRow.plan || 'none'; } catch { plan = 'none'; }
+  try { statusRow = await getStatus(); realPlan = statusRow.plan || 'none'; } catch { realPlan = 'none'; }
+  applyPlan();
   try { profile = await getProfile(); } catch { profile = {}; }
-  if (!profile.onboarding_complete && plan === 'none') { location.replace('/onboarding'); return; }
+  if (!profile.onboarding_complete && realPlan === 'none' && !isAdmin) { location.replace('/onboarding'); return; }
   try { const mk = await getMarketplaces(); accounts = mk.accounts || []; } catch { accounts = []; }
   document.addEventListener('syndrax-ext', () => { ext = window.SyndraxExt || ext; renderShell(); });
   renderShell();
@@ -129,12 +143,20 @@ function renderShell() {
           <button class="app-signout" id="signOut">Sign out</button>
         </div>
       </header>
+      ${isAdmin ? adminBar() : ''}
       <div class="auth-alert" id="appAlert" style="margin:12px 22px 0"></div>
       <main class="dash-content" id="content"></main>
     </div>`;
 
   $('#railToggle').onclick = () => { railOpen = !railOpen; renderShell(); };
   $('#signOut').onclick = () => { signOut(); location.href = '/login'; };
+  if (isAdmin) {
+    root.querySelectorAll('[data-pp]').forEach(b => b.onclick = () => {
+      previewPlan = b.dataset.pp; localStorage.setItem(PREVIEW_KEY, previewPlan); applyPlan(); renderShell();
+    });
+    const reset = $('#ppReset');
+    if (reset) reset.onclick = () => { previewPlan = null; localStorage.removeItem(PREVIEW_KEY); applyPlan(); renderShell(); };
+  }
   root.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => { activeTab = b.dataset.tab; selectedJobId = null; renderShell(); });
   renderTab();
 }
@@ -144,6 +166,17 @@ function navBtn(t) {
   return `<button class="dash-nav${activeTab === t.id ? ' active' : ''}" data-tab="${t.id}" title="${t.label}${locked ? ' (upgrade)' : ''}">
     ${icon(t.icon)}<span>${t.label}</span>${locked ? `<span class="lock">${icon('lock')}</span>` : ''}
   </button>`;
+}
+
+function adminBar() {
+  return `<div class="admin-bar">
+    <span class="ab-label">★ Admin preview</span>
+    <div class="admin-seg">
+      ${['business', 'growth', 'enterprise'].map(p => `<button data-pp="${p}" class="${plan === p && previewPlan ? 'on' : ''}">${PLAN_LABEL[p]}</button>`).join('')}
+    </div>
+    <span class="ab-note">real plan: ${PLAN_LABEL[realPlan]}${previewPlan ? ` · previewing ${PLAN_LABEL[plan]}` : ' · viewing your real plan'}</span>
+    ${previewPlan ? '<button class="ab-reset" id="ppReset">exit preview</button>' : ''}
+  </div>`;
 }
 
 function devicePill() {
@@ -159,9 +192,9 @@ function renderTab() {
   const t = TABS.find(x => x.id === activeTab);
   if (t?.feature && !can(t.feature)) return renderUpgradeLock(t.feature);
   ({
-    workspace: renderWorkspace, accounts: renderAccounts, jobs: renderJobsTab,
+    home: renderHome, workspace: renderWorkspace, accounts: renderAccounts, jobs: renderJobsTab,
     devices: renderDevices, team: renderTeam, audit: renderAudit, plan: renderPlanTab,
-  }[activeTab] || renderWorkspace)();
+  }[activeTab] || renderHome)();
 }
 
 function renderUpgradeLock(feature) {
@@ -175,6 +208,99 @@ function renderUpgradeLock(feature) {
       <p style="color:#475569;font-size:11px">You're on ${PLAN_LABEL[plan]}.</p>
     </div>`;
   const b = $('#lockUp'); if (b) b.onclick = () => startCheckout(np).catch(e => showAlert(e.message));
+}
+
+// ── HOME / OVERVIEW ───────────────────────────────────────────────────────────
+const fmt$ = (n) => '$' + Math.round(n).toLocaleString();
+
+// Sample performance series, scaled by plan, until live sales sync is wired from
+// the connected accounts. Clearly labelled "sample" in the UI.
+function salesSeries() {
+  const scale = { trial: 0.6, business: 1, growth: 2.6, enterprise: 6, none: 0.4 }[plan] || 1;
+  const baseGross = [340, 420, 390, 520, 610, 560, 720, 880];
+  const labels = ['W1', 'W2', 'W3', 'W4', 'W5', 'W6', 'W7', 'W8'];
+  const gross = baseGross.map(v => Math.round(v * scale));
+  const net = gross.map(v => Math.round(v * 0.42));
+  return { labels, gross, net, grossTotal: gross.reduce((a, b) => a + b, 0), netTotal: net.reduce((a, b) => a + b, 0), sample: true };
+}
+
+function areaChart(labels, sets) {
+  const W = 760, H = 200, pl = 10, pr = 10, pt = 12, pb = 22;
+  const max = Math.max(1, ...sets.flatMap(s => s.data));
+  const n = labels.length;
+  const x = i => pl + (i / (n - 1)) * (W - pl - pr);
+  const y = v => pt + (1 - v / max) * (H - pt - pb);
+  let svg = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block">`;
+  for (let g = 0; g <= 3; g++) { const gy = pt + (g / 3) * (H - pt - pb); svg += `<line x1="${pl}" y1="${gy}" x2="${W - pr}" y2="${gy}" stroke="rgba(255,255,255,.06)"/>`; }
+  sets.forEach(s => {
+    const pts = s.data.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+    svg += `<polygon points="${pl},${H - pb} ${pts} ${W - pr},${H - pb}" fill="${s.color}" opacity="0.10"/>`;
+    svg += `<polyline points="${pts}" fill="none" stroke="${s.color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+    s.data.forEach((v, i) => { svg += `<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="2.4" fill="${s.color}"/>`; });
+  });
+  labels.forEach((l, i) => { svg += `<text x="${x(i).toFixed(1)}" y="${H - 6}" text-anchor="middle" font-size="9" fill="#475569">${l}</text>`; });
+  return svg + '</svg>';
+}
+
+function stat(label, val, ic, dir, sub) {
+  return `<div class="stat"><div class="s-label">${icon(ic)} ${label}</div><div class="s-val">${val}</div><div class="s-sub ${dir || ''}">${sub}</div></div>`;
+}
+
+function accountsStrip() {
+  const connected = accounts.map(a => {
+    const m = marketplace(a.marketplace);
+    const logo = marketplaceLogo(a.marketplace) || `<span style="font:800 16px var(--nav-font);color:#fff">${(m?.name || '?')[0]}</span>`;
+    return `<div class="acct-chip active"><span class="ac-logo neutral">${logo}</span><div><div class="ac-name">${esc(a.label || m?.name || a.marketplace)}</div><div class="ac-sub on">● active</div></div></div>`;
+  }).join('');
+  const have = new Set(accounts.map(a => a.marketplace));
+  const adds = MARKETPLACES.filter(m => m.access !== 'source' && !have.has(m.id)).slice(0, 3).map(m => {
+    const logo = marketplaceLogo(m.id) || `<span style="font:800 16px var(--nav-font);color:#67e8f9">${m.name[0]}</span>`;
+    return `<div class="acct-chip add" data-connect="${m.id}"><span class="ac-logo">${logo}</span><div><div class="ac-name">${m.name}</div><div class="ac-sub">+ connect</div></div></div>`;
+  }).join('');
+  return (connected + adds) || '<p style="font-size:12px;color:#64748b">No accounts yet.</p>';
+}
+
+function renderHome() {
+  $('#topSub').textContent = '';
+  const content = $('#content');
+  const incomplete = accounts.length === 0;
+  const s = salesSeries();
+  const activeAccts = accounts.length || ({ trial: 1, business: 1, growth: 3, enterprise: 8, none: 0 }[plan] || 0);
+  const orders = Math.round(s.grossTotal / 42);
+  const margin = s.grossTotal ? Math.round(s.netTotal / s.grossTotal * 100) : 0;
+
+  content.innerHTML = `
+    ${incomplete ? `<div class="setup-strip">
+      <div class="ss-ico">${icon('rocket')}</div>
+      <div style="flex:1"><div class="ss-title">Finish your setup</div><div class="ss-sub">Connect a marketplace to start listing and see your live net/gross here.</div></div>
+      <button class="app-btn sm" data-connect="ebay">Connect eBay</button>
+      <button class="app-btn ghost sm" data-setup="1">Setup guide</button>
+    </div>` : ''}
+
+    <div class="home-grid">
+      ${stat('Gross (8 wk)', fmt$(s.grossTotal), 'cash', 'up', '↑ 12% vs prev')}
+      ${stat('Net profit', fmt$(s.netTotal), 'cash', 'up', margin + '% margin')}
+      ${stat('Orders', orders.toLocaleString(), 'briefcase', '', 'across your accounts')}
+      ${stat('Active accounts', String(activeAccts), 'tag', '', PLAN_LABEL[plan])}
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-head">
+        <h3>Performance ${s.sample ? '<span class="mk-badge soon" style="position:static;margin-left:6px">sample</span>' : ''}</h3>
+        <div class="chart-legend"><span><i style="background:#22d3ee"></i>Gross</span><span><i style="background:#d946ef"></i>Net</span></div>
+      </div>
+      ${areaChart(s.labels, [{ name: 'Gross', color: '#22d3ee', data: s.gross }, { name: 'Net', color: '#d946ef', data: s.net }])}
+      ${s.sample ? '<div style="font-size:11px;color:#475569;margin-top:6px">Sample numbers — your live net/gross appears here once your connected accounts sync.</div>' : ''}
+    </div>
+
+    <div class="panel">
+      <div class="panel-h">Connected accounts <span class="link" data-go="accounts">manage →</span></div>
+      <div class="acct-strip">${accountsStrip()}</div>
+    </div>`;
+
+  content.querySelectorAll('[data-connect]').forEach(b => b.onclick = () => { connecting = b.dataset.connect; openConnectModal(); });
+  content.querySelectorAll('[data-go]').forEach(b => b.onclick = () => { activeTab = b.dataset.go; renderShell(); });
+  content.querySelectorAll('[data-setup]').forEach(b => b.onclick = () => { location.href = '/onboarding'; });
 }
 
 // ── WORKSPACE ─────────────────────────────────────────────────────────────────

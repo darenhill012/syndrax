@@ -248,6 +248,54 @@ html.dark .dash-rail-logo { mix-blend-mode: screen; }
 .job-log .ln { display: flex; gap: 8px; font: 11px/1.5 ui-monospace, monospace; color: #cbd5e1; }
 .job-log .ln .t { color: #475569; flex-shrink: 0; }
 
+/* ── Home / overview ─────────────────────────────────────────────────────── */
+.home-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 16px; }
+@media (max-width: 880px) { .home-grid { grid-template-columns: repeat(2, 1fr); } }
+.stat { border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.03); border-radius: 15px; padding: 16px; }
+.stat .s-label { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: #64748b; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+.stat .s-label svg { width: 13px; height: 13px; }
+.stat .s-val { font: 800 25px var(--nav-font); color: #f1f5f9; margin-top: 8px; letter-spacing: -.5px; }
+.stat .s-sub { font-size: 11px; margin-top: 4px; color: #64748b; }
+.stat .s-sub.up { color: #6ee7b7; } .stat .s-sub.down { color: #fca5a5; }
+
+.chart-card { border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.03); border-radius: 16px; padding: 18px 18px 10px; margin-bottom: 18px; position: relative; }
+.chart-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.chart-head h3 { font: 700 14px var(--nav-font); color: #f1f5f9; margin: 0; }
+.chart-legend { display: flex; gap: 16px; font-size: 11px; color: #94a3b8; }
+.chart-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: middle; }
+.chart-empty { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: #64748b; background: rgba(2,5,15,.45); border-radius: 16px; text-align: center; padding: 20px; }
+
+/* Minimal connected-accounts strip with pulsing states */
+@keyframes sx-pulse-on { 0%,100% { box-shadow: 0 0 0 0 rgba(16,185,129,.45); } 50% { box-shadow: 0 0 0 7px rgba(16,185,129,0); } }
+@keyframes sx-pulse-add { 0%,100% { box-shadow: 0 0 0 0 rgba(34,211,238,.5); } 50% { box-shadow: 0 0 0 8px rgba(34,211,238,0); } }
+.acct-strip { display: flex; gap: 12px; flex-wrap: wrap; }
+.acct-chip { display: flex; align-items: center; gap: 11px; padding: 9px 16px 9px 9px; border-radius: 14px; border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.03); }
+.acct-chip .ac-logo { width: 38px; height: 38px; border-radius: 11px; background: rgba(255,255,255,.06); display: flex; align-items: center; justify-content: center; }
+.acct-chip .ac-logo svg { width: 24px; height: 24px; }
+.acct-chip.active { border-color: rgba(16,185,129,.4); }
+.acct-chip.active .ac-logo { animation: sx-pulse-on 2.4s ease-in-out infinite; }
+.acct-chip.add { cursor: pointer; border-style: dashed; border-color: rgba(34,211,238,.35); }
+.acct-chip.add .ac-logo { color: #67e8f9; animation: sx-pulse-add 2.4s ease-in-out infinite; }
+.acct-chip.add:hover { border-color: rgba(34,211,238,.7); }
+.ac-name { font-size: 13px; font-weight: 700; color: #e2e8f0; }
+.ac-sub { font-size: 10px; color: #64748b; margin-top: 1px; }
+.ac-sub.on { color: #6ee7b7; }
+
+.setup-strip { display: flex; align-items: center; gap: 14px; padding: 15px 18px; border-radius: 14px; border: 1px solid rgba(34,211,238,.28); background: rgba(34,211,238,.05); margin-bottom: 18px; }
+.setup-strip .ss-ico { width: 38px; height: 38px; flex-shrink: 0; border-radius: 11px; background: rgba(34,211,238,.12); color: #67e8f9; display: flex; align-items: center; justify-content: center; }
+.setup-strip .ss-title { font-weight: 700; color: #e2e8f0; font-size: 14px; }
+.setup-strip .ss-sub { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+
+/* Admin plan-preview bar */
+.admin-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 8px 22px; background: linear-gradient(90deg, rgba(217,70,239,.12), rgba(34,211,238,.08)); border-bottom: 1px solid rgba(255,255,255,.1); }
+.admin-bar .ab-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: #f0abfc; }
+.admin-seg { display: flex; border: 1px solid rgba(255,255,255,.15); border-radius: 10px; overflow: hidden; }
+.admin-seg button { background: none; border: none; color: #94a3b8; font: 700 12px var(--nav-font); padding: 6px 16px; cursor: pointer; transition: background .15s, color .15s; }
+.admin-seg button + button { border-left: 1px solid rgba(255,255,255,.12); }
+.admin-seg button.on { background: rgba(34,211,238,.18); color: #67e8f9; }
+.admin-bar .ab-note { font-size: 11px; color: #64748b; }
+.admin-bar .ab-reset { background: none; border: none; color: #f0abfc; font-size: 11px; cursor: pointer; }
+
 /* Neutral logo chip (real brand SVGs carry their own color) */
 .mk-tile .mk-chip.neutral { background: rgba(255,255,255,.06) !important; border: 1px solid rgba(255,255,255,.08); }
 
