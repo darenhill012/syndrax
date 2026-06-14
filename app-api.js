@@ -123,4 +123,79 @@ export async function getAudit() {
   }
 }
 
-window.SyndraxApp = { getProfile, saveProfile, getMarketplaces, addMarketplaceAccount, removeMarketplaceAccount, getAudit, startTrial };
+// ── Nodes (workspace devices — the PC you're on now + remote/RDP machines) ─────
+// Shape: { nodes: [{ id, deviceId, name, nodeType, ip, status, sessionType }] }
+const LS_NODES = 'syndrax_nodes_v1';
+export async function getNodes() {
+  try {
+    return await api('/api/nodes');
+  } catch (e) {
+    if (isOffline(e)) return { nodes: lsGet(LS_NODES, []) };
+    throw e;
+  }
+}
+
+// Upsert a node by deviceId (the extension reports the current PC + fleet here).
+export async function saveNode(node) {
+  const local = lsGet(LS_NODES, []);
+  const idx = local.findIndex((n) => n.deviceId === node.deviceId);
+  const rec = { id: idx >= 0 ? local[idx].id : 'nd_' + Math.random().toString(36).slice(2, 9), ...node };
+  if (idx >= 0) local[idx] = { ...local[idx], ...rec }; else local.push(rec);
+  lsSet(LS_NODES, local);
+  try {
+    return await api('/api/nodes', { method: 'POST', body: JSON.stringify(node) });
+  } catch (e) {
+    if (isOffline(e)) return rec;
+    throw e;
+  }
+}
+
+export async function updateNode(id, patch) {
+  const local = lsGet(LS_NODES, []).map((n) => (n.id === id ? { ...n, ...patch } : n));
+  lsSet(LS_NODES, local);
+  try {
+    return await api('/api/nodes/' + encodeURIComponent(id), { method: 'PATCH', body: JSON.stringify(patch) });
+  } catch (e) {
+    if (isOffline(e)) return local.find((n) => n.id === id);
+    throw e;
+  }
+}
+
+// ── Addons (marketing layers, node- or account-level) ─────────────────────────
+// Shape: { addons: [{ id, nodeId, accountId, addonType, label, config, status }] }
+const LS_ADDONS = 'syndrax_addons_v1';
+export async function getAddons() {
+  try {
+    return await api('/api/addons');
+  } catch (e) {
+    if (isOffline(e)) return { addons: lsGet(LS_ADDONS, []) };
+    throw e;
+  }
+}
+
+export async function addAddon(addon) {
+  const local = lsGet(LS_ADDONS, []);
+  const rec = { id: 'ad_' + Math.random().toString(36).slice(2, 9), status: 'connected', ...addon };
+  lsSet(LS_ADDONS, [...local, rec]);
+  try {
+    return await api('/api/addons', { method: 'POST', body: JSON.stringify(addon) });
+  } catch (e) {
+    if (isOffline(e)) return rec;
+    throw e;
+  }
+}
+
+export async function removeAddon(id) {
+  lsSet(LS_ADDONS, lsGet(LS_ADDONS, []).filter((a) => a.id !== id));
+  try {
+    return await api('/api/addons/' + encodeURIComponent(id), { method: 'DELETE' });
+  } catch (e) {
+    if (isOffline(e)) return { ok: true };
+    throw e;
+  }
+}
+
+window.SyndraxApp = {
+  getProfile, saveProfile, getMarketplaces, addMarketplaceAccount, removeMarketplaceAccount,
+  getAudit, startTrial, getNodes, saveNode, updateNode, getAddons, addAddon, removeAddon,
+};

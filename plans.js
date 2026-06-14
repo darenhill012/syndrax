@@ -79,6 +79,18 @@ export const MARKETPLACES = [
 
 export function marketplace(id) { return MARKETPLACES.find((m) => m.id === id) || null; }
 
+// Addons — marketing/automation layers that sit alongside marketplace accounts
+// (distinct from marketplaces). They attach to a node (node-level), a specific
+// marketplace account (account-level), or both. Mirrors the cloud src/config/addons.ts.
+// scope: 'node' | 'account' | 'both'.
+export const ADDONS = [
+  { id: 'facebook_ads',       name: 'Facebook Ads',        status: 'soon', scope: 'account', color: '#1877f2', blurb: 'Promote a store with automated Facebook ad campaigns.' },
+  { id: 'pinterest_autopost', name: 'Pinterest Auto-Post', status: 'soon', scope: 'both',    color: '#e60023', blurb: 'Auto-pin listings to Pinterest boards on a schedule.' },
+  { id: 'instagram_autopost', name: 'Instagram Auto-Post', status: 'soon', scope: 'account', color: '#e1306c', blurb: 'Cross-post new listings to Instagram automatically.' },
+  { id: 'google_shopping',    name: 'Google Shopping',     status: 'soon', scope: 'account', color: '#4285f4', blurb: 'Feed listings into Google Shopping campaigns.' },
+];
+export function addon(id) { return ADDONS.find((a) => a.id === id) || null; }
+
 // Full-color inline brand marks (CSP-safe — inline SVG, no external img). Each
 // carries its own brand colors so it reads as the real logo on a neutral chip.
 export const MARKETPLACE_LOGOS = {

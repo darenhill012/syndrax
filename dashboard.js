@@ -8,12 +8,14 @@ import { getStatus, openPortal, startCheckout } from '/billing.js';
 import {
   getProfile, saveProfile, getMarketplaces, addMarketplaceAccount,
   removeMarketplaceAccount, getAudit, startTrial,
+  getNodes, saveNode, updateNode, getAddons, addAddon, removeAddon,
 } from '/app-api.js';
 import {
   PLAN_LABEL, PLAN_PRICE, PLAN_TAGLINE, PLAN_LIMITS,
   MARKETPLACES, marketplace, marketplaceLogo, eligibility, runAudit, nextPlan, isUnlimited,
-  trustJourney,
+  trustJourney, ADDONS, addon,
 } from '/plans.js';
+import { playSfx, toggleSfx, sfxEnabled } from '/sfx.js';
 
 // ── extension (sync backend) ─────────────────────────────────────────────────
 const EXT_IDS = ['olhecndljgbocfkdejkcppadadmfiojo', 'mgapfpdkkihbeehfkgoajhealmgpnglo'];
@@ -42,6 +44,8 @@ const ICONS = {
   refresh: `<svg viewBox="0 0 24 24" ${P}><path d="M21 2v6h-6M3 22v-6h6"/><path d="M21 8a9 9 0 0 0-15-3L3 8M3 16a9 9 0 0 0 15 3l3-3"/></svg>`,
   crosshair: `<svg viewBox="0 0 24 24" ${P}><circle cx="12" cy="12" r="9"/><path d="M22 12h-4M6 12H2M12 6V2M12 22v-4"/></svg>`,
   wifi: `<svg viewBox="0 0 24 24" ${P}><path d="M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0M12 19.5h.01"/></svg>`,
+  sound: `<svg viewBox="0 0 24 24" ${P}><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a9 9 0 0 1 0 14"/></svg>`,
+  mute: `<svg viewBox="0 0 24 24" ${P}><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M23 9l-6 6M17 9l6 6"/></svg>`,
 };
 const icon = (n) => ICONS[n] || '';
 
@@ -73,7 +77,11 @@ let jobs = loadJobs();
 let automations = loadAutomations();
 let addedDevices = loadDevices(); // devices you add manually (name + IP)
 let nodes = []; // real cluster nodes synced from the extension
+let cloudNodes = []; // workspace nodes persisted server-side (have integer .id for node_id)
+let addons = []; // marketing addons (node- or account-level), server-side
 let thisPcIp = ''; // public IP of this PC (from the extension)
+let currentDeviceId = 'this-device'; // the device this browser's extension runs on
+let lastConnectNode = localStorage.getItem('syndrax_last_node') || ''; // remembered node pick
 let activeTab = 'home';
 let selectedTarget = null; // target account id for marketplace-aware scripts
 let selectedJobId = null;
@@ -181,6 +189,9 @@ function syncExtensionAccounts() {
         if (chrome.runtime.lastError || !resp || !resp.ok) return resolve();
         if (Array.isArray(resp.nodes)) nodes = resp.nodes;
         if (resp.ip) thisPcIp = resp.ip;
+        if (resp.deviceId) currentDeviceId = resp.deviceId;
+        // Persist the live node list to the cloud (durable, team-shared). Best-effort.
+        persistNodes(resp);
         const synced = (resp.accounts || []).map(a => ({
           id: 'ext-' + (a.id || a.username), marketplace: a.platform || 'ebay',
           label: a.username || a.platform || 'account', deviceId: a.nodeId || 'this-device',
@@ -198,6 +209,34 @@ function syncExtensionAccounts() {
   });
 }
 
+// Persist the extension's reported nodes (current PC + fleet) to the cloud so the
+// workspace's node list survives across sessions/browsers and is shared with the
+// team. Best-effort: a failure just leaves the in-memory list. Refreshes cloudNodes
+// (which carry the integer .id used as node_id when pinning accounts/addons).
+function persistNodes(resp) {
+  const list = Array.isArray(resp.nodes) ? resp.nodes : [];
+  const cur = resp.currentNode;
+  const toSave = [];
+  if (cur && cur.deviceId) toSave.push(cur);
+  for (const n of list) { if (n.deviceId && !toSave.some(t => t.deviceId === n.deviceId)) toSave.push(n); }
+  if (!toSave.length) return;
+  Promise.all(toSave.map(n => saveNode({
+    deviceId: n.deviceId, name: n.name, nodeType: n.nodeType || (n.local ? 'current' : 'remote'),
+    ip: n.ip || '', status: n.status || (n.local ? 'online' : 'offline'),
+  }).catch(() => null))).then(async () => {
+    try { const r = await getNodes(); cloudNodes = r.nodes || []; if (activeTab === 'devices') renderDevices(); } catch {}
+  });
+}
+
+// Resolve the node a new account should attach to. Returns { nodeId, deviceId }.
+// Defaults to the remembered pick, else the current PC, else the first node.
+function resolveConnectNode() {
+  const cur = cloudNodes.find(n => n.deviceId === currentDeviceId) || cloudNodes.find(n => n.nodeType === 'current');
+  const remembered = cloudNodes.find(n => String(n.id) === lastConnectNode);
+  const pick = remembered || cur || cloudNodes[0] || null;
+  return { nodeId: pick ? pick.id : null, deviceId: pick ? pick.deviceId : currentDeviceId };
+}
+
 async function boot() {
   try { statusRow = await getStatus(); realPlan = statusRow.plan || 'none'; } catch { realPlan = 'none'; }
   // The owner/admin account is real Enterprise with full access to every tool.
@@ -207,6 +246,8 @@ async function boot() {
   try { profile = await getProfile(); } catch { profile = {}; }
   if (!profile.onboarding_complete && realPlan === 'none' && !isAdmin) { location.replace('/onboarding'); return; }
   try { const mk = await getMarketplaces(); accounts = mk.accounts || []; } catch { accounts = []; }
+  try { const nd = await getNodes(); cloudNodes = nd.nodes || []; } catch { cloudNodes = []; }
+  try { const ad = await getAddons(); addons = ad.addons || []; } catch { addons = []; }
   await syncExtensionAccounts();
   document.addEventListener('syndrax-ext', () => { ext = window.SyndraxExt || ext; syncExtensionAccounts().then(renderShell); });
   renderShell();
@@ -235,6 +276,7 @@ function renderShell() {
         <div><h2>${TABS.find(t => t.id === activeTab)?.label || ''}</h2><span class="sub" id="topSub"></span></div>
         <div class="dash-id">
           ${devicePill()}
+          <button class="sfx-toggle${sfxEnabled() ? ' on' : ''}" id="sfxToggle" title="${sfxEnabled() ? 'Sound on' : 'Sound off'}">${icon(sfxEnabled() ? 'sound' : 'mute')}</button>
           <span>${esc(email)}</span>
           ${planChip}
           <button class="app-signout" id="signOut">Sign out</button>
@@ -247,6 +289,8 @@ function renderShell() {
 
   $('#railToggle').onclick = () => { railOpen = !railOpen; renderShell(); };
   $('#signOut').onclick = () => { signOut(); location.href = '/login'; };
+  const sfxBtn = $('#sfxToggle');
+  if (sfxBtn) sfxBtn.onclick = () => { const on = toggleSfx(); sfxBtn.classList.toggle('on', on); sfxBtn.title = on ? 'Sound on' : 'Sound off'; sfxBtn.innerHTML = icon(on ? 'sound' : 'mute'); };
   if (isAdmin) {
     root.querySelectorAll('[data-pp]').forEach(b => b.onclick = () => {
       previewPlan = b.dataset.pp; localStorage.setItem(PREVIEW_KEY, previewPlan); applyPlan(); renderShell();
@@ -286,6 +330,7 @@ function devicePill() {
 function showAlert(msg, type = 'error') { const el = $('#appAlert'); if (el) { el.textContent = msg; el.className = 'auth-alert ' + type; } }
 
 function showToast(msg, type = 'info', duration = 4200) {
+  playSfx(type === 'success' ? 'confirm' : type === 'error' ? 'error' : 'nav');
   let box = document.getElementById('toastBox');
   if (!box) { box = document.createElement('div'); box.id = 'toastBox'; document.body.appendChild(box); }
   const t = document.createElement('div');
@@ -692,7 +737,46 @@ function renderAccounts() {
   $('#content').querySelectorAll('[data-connect]').forEach(b => b.onclick = () => { connecting = b.dataset.connect; openConnectModal(); });
   $('#content').querySelectorAll('[data-up]').forEach(b => b.onclick = () => startCheckout(b.dataset.up).catch(e => showAlert(e.message)));
   $('#content').querySelectorAll('[data-est]').forEach(b => b.onclick = () => { toggleEstablished(b.dataset.est); });
+  $('#content').querySelectorAll('[data-addaddon]').forEach(b => b.onclick = () => openAddonModal(b.dataset.addaddon));
+  $('#content').querySelectorAll('[data-deladdon]').forEach(b => b.onclick = async () => {
+    try { await removeAddon(b.dataset.deladdon); addons = addons.filter(x => String(x.id) !== String(b.dataset.deladdon)); renderAccounts(); }
+    catch (e) { showAlert(e.message || 'Could not remove add-on.'); }
+  });
   const es = $('#ebaySync'); if (es) es.onclick = openSyncModal;
+}
+
+// Attach a marketing add-on to a marketplace account (account-level) — Facebook
+// Ads, Pinterest auto-post, etc. Persisted server-side via /api/addons.
+function openAddonModal(accountId) {
+  const a = accounts.find(x => String(x.id) === String(accountId)); if (!a) return;
+  const m = marketplace(a.marketplace);
+  const choices = ADDONS.filter(ad => ad.scope === 'account' || ad.scope === 'both');
+  const host = document.createElement('div');
+  host.className = 'modal-bg';
+  host.innerHTML = `
+    <div class="modal" onclick="event.stopPropagation()">
+      <h3>${icon('plus')} Add a marketing add-on</h3>
+      <p class="modal-sub">Promote <b style="color:#cbd5e1">${esc(a.label || m?.name || a.marketplace)}</b>. Add-ons run alongside this account on its node.</p>
+      <div class="mk-grid" style="grid-template-columns:repeat(2,1fr);gap:10px;margin-top:6px">
+        ${choices.map(ad => `<button class="mk-tile" data-addon="${ad.id}" style="text-align:left;padding:12px">
+          <span class="mk-badge ${ad.status === 'live' ? 'live' : 'soon'}">${ad.status === 'live' ? 'Live' : 'Soon'}</span>
+          <div class="mk-name" style="margin-top:2px">${esc(ad.name)}</div>
+          <div style="font-size:11px;color:#64748b;margin-top:4px">${esc(ad.blurb)}</div>
+        </button>`).join('')}
+      </div>
+      <div class="app-btn-row" style="margin-top:16px"><button class="app-btn ghost" id="adCancel">Close</button></div>
+    </div>`;
+  host.onclick = () => host.remove();
+  document.body.appendChild(host);
+  $('#adCancel', host).onclick = () => host.remove();
+  host.querySelectorAll('[data-addon]').forEach(b => b.onclick = async () => {
+    const ad = addon(b.dataset.addon);
+    try {
+      const rec = await addAddon({ addonType: ad.id, accountId: a.id, nodeId: a.nodeId || null, label: ad.name });
+      addons.push(rec); host.remove(); renderAccounts();
+      showToast(`${ad.name} added to ${a.label || m?.name}. ${ad.status === 'soon' ? 'Activates when this add-on ships.' : ''}`, 'success');
+    } catch (e) { showAlert(e.message || 'Could not add add-on.'); }
+  });
 }
 
 function acctTile(m, n, limit) {
@@ -710,6 +794,37 @@ function acctTile(m, n, limit) {
   </div>`;
 }
 
+// Node picker + "connect existing vs create new" — shown in every connect modal
+// so each account is pinned to a node (the PC you're on, or a remote/RDP machine)
+// and records whether you're linking an existing account or starting a guided new
+// one (which uses the LLC/EIN already captured in your profile). State lives on the
+// modal's host element so the connect handler can read it.
+function connectExtrasHtml(cn) {
+  const opts = cloudNodes.length
+    ? cloudNodes.map(n => {
+        const tag = n.nodeType === 'current' ? ' (This PC)' : n.nodeType === 'rdp' ? ' (RDP)' : ' (Remote)';
+        const sel = String(n.id) === String(cn.nodeId) ? ' selected' : '';
+        return `<option value="${esc(n.id)}"${sel}>${esc(n.name || n.deviceId)}${tag}</option>`;
+      }).join('')
+    : `<option value="">This PC</option>`;
+  return `
+    <div class="connect-extras" style="display:grid;gap:12px;margin-bottom:14px;padding:12px;border:1px solid var(--border);border-radius:10px;background:rgba(255,255,255,.02)">
+      <div>
+        <label style="margin:0 0 6px">Which device runs this account?</label>
+        <select id="cNode">${opts}</select>
+        <div style="font-size:11px;color:#64748b;margin-top:4px">Each account stays on its own device/IP — that's how Syndrax avoids linked-account restrictions.</div>
+      </div>
+      <div>
+        <label style="margin:0 0 6px">Account</label>
+        <div class="cmode-tabs" style="display:flex;gap:8px">
+          <button type="button" class="method-tab on" data-cmode="existing">I already have one</button>
+          <button type="button" class="method-tab" data-cmode="create_new">Create a new one</button>
+        </div>
+        <div id="cModeNote" style="font-size:11px;color:#64748b;margin-top:6px"></div>
+      </div>
+    </div>`;
+}
+
 function openConnectModal() {
   const m = marketplace(connecting); if (!m) return;
   const elig = m.access === 'gated' ? eligibility(m.id, { ein: profile.ein }) : null;
@@ -718,6 +833,7 @@ function openConnectModal() {
   const isLive   = m.status === 'live';
   const logo = marketplaceLogo(m.id) || `<span style="font:800 22px var(--nav-font);color:#fff">${m.name[0]}</span>`;
   const j = trustJourney(m.id);
+  const cn = resolveConnectNode();
 
   // Mini trust phase stepper shown in the modal
   const miniSteps = j.phases.map((p, i) => `
@@ -740,6 +856,7 @@ function openConnectModal() {
       </div>
       <div style="padding:20px 24px">
 
+      ${isSource ? '' : connectExtrasHtml(cn)}
       ${isSource ? `
         <p class="modal-sub">${esc(m.name)} is your <b style="color:#cbd5e1">sourcing engine</b> — Syndrax reads it for product data, price history and winning ASINs to list on eBay, Etsy and others. Not a sell channel.</p>
         <label>Amazon region</label>
@@ -781,16 +898,32 @@ function openConnectModal() {
   host.onclick = () => host.remove();
   document.body.appendChild(host);
   $('#cCancel', host).onclick = () => host.remove();
+
+  // Connect-mode toggle (existing vs create-new) — create-new uses captured LLC/EIN.
+  let connectMode = 'existing';
+  const noteEl = $('#cModeNote', host);
+  host.querySelectorAll('[data-cmode]').forEach(b => b.onclick = () => {
+    connectMode = b.dataset.cmode;
+    host.querySelectorAll('[data-cmode]').forEach(x => x.classList.toggle('on', x === b));
+    if (noteEl) noteEl.textContent = connectMode === 'create_new'
+      ? `We'll guide you through opening a fresh ${m.name} account using your business details${profile.ein ? ' (EIN on file)' : ''}.`
+      : '';
+  });
+
   $('#cAdd', host).onclick = async () => {
     const btn = $('#cAdd', host);
     const label = ($('#cLabel', host)?.value.trim()) || m.name;
-    const url   = ($('#cUrl',   host)?.value.trim()) || '';
+    const storeUrl = ($('#cUrl', host)?.value.trim()) || '';
     const ein   = ($('#cEin',   host)?.value.trim()) || '';
     const region = ($('#cRegion', host)?.value) || 'US';
+    const nodeSel = $('#cNode', host)?.value || '';
+    const nodeId = nodeSel ? nodeSel : (cn.nodeId || null);
+    const deviceId = (cloudNodes.find(n => String(n.id) === String(nodeId)) || {}).deviceId || cn.deviceId || 'this-device';
+    if (nodeSel) { lastConnectNode = nodeSel; localStorage.setItem('syndrax_last_node', nodeSel); }
     btn.disabled = true; btn.textContent = 'Connecting…';
     try {
       const meta = isGated ? { ein } : isSource ? { region } : {};
-      await addMarketplaceAccount({ marketplace: m.id, label, deviceId: 'this-device', url, ...meta });
+      await addMarketplaceAccount({ marketplace: m.id, label, deviceId, nodeId, storeUrl, connectMode, ...meta });
       if (ein && isGated) { try { await saveProfile({ ein }); profile.ein = ein; } catch {} }
       const mk2 = await getMarketplaces(); accounts = mk2.accounts || [];
       host.remove();
@@ -906,25 +1039,48 @@ function toggleEstablished(id) {
   localStorage.setItem('syndrax_established', JSON.stringify([...s])); renderAccounts();
 }
 
+// Display name for the node an account/addon is pinned to.
+function nodeLabel(nodeId, deviceId) {
+  const n = cloudNodes.find(x => String(x.id) === String(nodeId)) || cloudNodes.find(x => x.deviceId === deviceId);
+  if (n) return (n.name || n.deviceId) + (n.nodeType === 'current' ? ' · This PC' : n.nodeType === 'rdp' ? ' · RDP' : ' · Remote');
+  return deviceId === 'this-device' || !deviceId ? 'This PC' : deviceId;
+}
+
 function trustCard(a) {
   const m = marketplace(a.marketplace);
   const j = trustJourney(a.marketplace);
   const est = establishedSet().has(a.id);
   const logo = marketplaceLogo(a.marketplace) || `<span style="font:800 15px var(--nav-font);color:#fff">${(m?.name || '?')[0]}</span>`;
+  const acctAddons = addons.filter(x => String(x.accountId) === String(a.id));
   const current = 1; // new account: phase 0 done, phase 1 active (real progress tracking later)
   const steps = j.phases.map((p, i) => {
     const state = est || i < current ? 'done' : (i === current ? 'active' : 'locked');
     return `<div class="trust-step ${state}"><span class="ts-dot">${state === 'done' ? '✓' : state === 'locked' ? '🔒' : i + 1}</span><span class="ts-label">${esc(p.label)}</span><span class="ts-desc">${esc(p.desc)}</span></div>`;
   }).join('');
+  const storeUrl = a.storeUrl || a.store_url || '';
+  const node = nodeLabel(a.nodeId, a.deviceId);
+  const meta = `<div class="ac-sub" style="margin-top:3px;display:flex;gap:10px;flex-wrap:wrap">
+      <span>${icon('monitor')} ${esc(node)}</span>
+      ${a.connectMode === 'create_new' ? '<span style="color:#fcd34d">new account (guided)</span>' : ''}
+      ${storeUrl ? `<a href="${esc(storeUrl)}" target="_blank" rel="noopener" style="color:#67e8f9">store ↗</a>` : ''}
+    </div>`;
+  const addonChips = acctAddons.length
+    ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">${acctAddons.map(x => { const ad = addon(x.addonType); return `<span class="acct-chip active" style="padding:4px 9px;font-size:11px"><span class="ac-name">${esc(ad?.name || x.addonType)}</span><button class="auto-del" data-deladdon="${x.id}" title="Remove" style="margin-left:6px">✕</button></span>`; }).join('')}</div>`
+    : '';
   return `<div class="trust-card">
     <div class="trust-head">
       <span class="mk-chip neutral" style="width:34px;height:34px">${logo}</span>
-      <div><div class="ac-name">${esc(a.label || m?.name || a.marketplace)}</div><div class="ac-sub">${esc(m?.name || a.marketplace)}${est ? ' · established' : ' · warming up'}</div></div>
+      <div style="flex:1"><div class="ac-name">${esc(a.label || m?.name || a.marketplace)}</div><div class="ac-sub">${esc(m?.name || a.marketplace)}${est ? ' · established' : ' · warming up'}</div>${meta}</div>
       <label class="trust-est"><input type="checkbox" ${est ? 'checked' : ''} data-est="${a.id}"> Established account</label>
     </div>
     <div class="trust-note">${esc(j.note)}</div>
     <div class="trust-track">${steps}</div>
     <div class="trust-gate ${est ? 'open' : ''}">${est ? '✓ Audit passed — growth scripts unlocked' : '🛡️ Audit gate — finish warm-up to unlock growth scripts (Research, Bulk list, Inventory)'}</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;flex-wrap:wrap;gap:8px">
+      <span style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.05em">Marketing add-ons</span>
+      <button class="app-btn ghost sm" data-addaddon="${a.id}">${icon('plus')} Add-on</button>
+    </div>
+    ${addonChips}
   </div>`;
 }
 
@@ -1008,8 +1164,14 @@ function nodeTower(n) {
 function renderDevices() {
   const showFleet = can('multiDevice');
   const limit = PLAN_LIMITS[plan]?.maxDevices;
-  const thisPc = { name: 'root-main', role: 'Main PC', status: ext.installed ? 'online' : 'offline', local: true, ip: thisPcIp };
+  const thisPc = { name: 'root-main', role: 'This PC', status: ext.installed ? 'online' : 'offline', local: true, ip: thisPcIp, deviceId: currentDeviceId, nodeType: 'current' };
   const all = [thisPc, ...nodes.map(n => ({ ...n, status: n.status === 'online' ? 'online' : (n.status || 'offline') })), ...addedDevices.map(d => ({ ...d, status: d.status === 'online' ? 'online' : 'offline' }))];
+  // Fold in server-persisted nodes the live sources didn't already cover (durable,
+  // team-shared). Match on deviceId / ip / name so we don't double-render the PC.
+  cloudNodes.forEach(n => {
+    const dup = all.some(x => (x.deviceId && x.deviceId === n.deviceId) || (x.ip && n.ip && x.ip === n.ip) || x.name === n.name);
+    if (!dup) all.push({ name: n.name || n.deviceId, role: n.nodeType === 'current' ? 'This PC' : n.nodeType === 'rdp' ? 'RDP' : 'Remote', status: n.status === 'online' ? 'online' : 'offline', local: n.nodeType === 'current', ip: n.ip, deviceId: n.deviceId, nodeType: n.nodeType });
+  });
   const onlineCount = all.filter(n => n.status === 'online').length;
   const health = Math.round(onlineCount / all.length * 100);
   $('#topSub').textContent = `· ${all.length} node${all.length === 1 ? '' : 's'}${isUnlimited(limit) ? '' : ' / ' + limit}`;
@@ -1042,11 +1204,24 @@ function renderDevices() {
       ${showFleet ? `<button id="recruit" style="width:${NODE_W}px;height:${Math.round(NODE_W * 620 / 220)}px;border:2px dashed rgba(255,255,255,.15);border-radius:18px;background:none;color:#475569;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;font:800 11px var(--nav-font);text-transform:uppercase;letter-spacing:.08em">${icon('plus')}<span>Recruit<br><span style="font-weight:400;font-size:9px">add node</span></span></button>` : ''}
     </div>
 
+    ${cloudNodes.length ? `<div class="panel" style="margin-top:18px"><div class="panel-h">Node types <span style="color:#64748b;font-weight:500;text-transform:none;letter-spacing:0">— we auto-detect the PC you're on; override remote/RDP here</span></div>
+      ${cloudNodes.map(n => `<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)">
+        <span style="flex:1;color:#cbd5e1;font-size:13px">${esc(n.name || n.deviceId)} <span style="color:#64748b">· ${esc(n.ip || '—')}</span></span>
+        <select data-nodetype="${esc(n.id)}" style="width:auto;min-width:170px">
+          ${['current', 'remote', 'rdp'].map(t => `<option value="${t}" ${n.nodeType === t ? 'selected' : ''}>${t === 'current' ? 'This PC (local)' : t === 'rdp' ? 'RDP / remote desktop' : 'Remote node'}</option>`).join('')}
+        </select>
+      </div>`).join('')}
+    </div>` : ''}
+
     <div class="wf-note" style="margin-top:10px">Power on/off, Wake-on-LAN and live screen control run in the Syndrax extension (it speaks to each node's agent over the LAN). <span class="link" data-openext="1">Open cluster control →</span></div>`;
 
   $('#content').querySelectorAll('[data-up]').forEach(b => b.onclick = () => startCheckout(b.dataset.up).catch(e => showAlert(e.message)));
   $('#content').querySelectorAll('[data-deldev]').forEach(b => b.onclick = (e) => { e.stopPropagation(); addedDevices = addedDevices.filter(d => d.id !== b.dataset.deldev); saveDevices(); renderDevices(); });
   $('#content').querySelectorAll('[data-tower]').forEach(b => b.onclick = () => showAlert('Power & live screen for this node open in the Syndrax extension (cluster control).', 'success'));
+  $('#content').querySelectorAll('[data-nodetype]').forEach(s => s.onchange = async () => {
+    try { await updateNode(s.dataset.nodetype, { nodeType: s.value }); const n = cloudNodes.find(x => String(x.id) === String(s.dataset.nodetype)); if (n) n.nodeType = s.value; showToast('Node type updated.', 'success'); renderDevices(); }
+    catch (e) { showAlert(e.message || 'Could not update node.'); }
+  });
   const rec = $('#recruit'); if (rec) rec.onclick = openAddDevice;
   const add = $('#addDev'); if (add) add.onclick = openAddDevice;
   const usel = $('#useThisPc'); if (usel) usel.onclick = () => {
@@ -1166,8 +1341,26 @@ function openAddDevice() {
 
 function renderTeam() {
   $('#topSub').textContent = '';
-  $('#content').innerHTML = `<div style="max-width:560px"><div class="panel"><div class="panel-h">Team</div><p style="font-size:13px;color:#94a3b8">Invite teammates to your workspace. Seats included on your plan: <b style="color:#cbd5e1">${PLAN_LIMITS[plan].teamSeats === null ? 'Unlimited' : PLAN_LIMITS[plan].teamSeats}</b>.</p><div class="app-btn-row"><button class="app-btn sm" id="invite">Invite a teammate</button></div></div></div>`;
-  $('#invite').onclick = () => showAlert('Team invites open in the extension Team panel for now.', 'success');
+  const seats = PLAN_LIMITS[plan].teamSeats;
+  const seatLabel = isUnlimited(seats) ? 'Unlimited' : seats;
+  $('#content').innerHTML = `<div style="max-width:600px">
+    <div class="panel">
+      <div class="panel-h">Team workspace</div>
+      <p style="font-size:13px;color:#94a3b8;line-height:1.6">Invite teammates to your workspace. They get an email, set a password, and sign in to the Syndrax extension — then they can work across <b style="color:#cbd5e1">all of your shared accounts and nodes</b>. Seats on ${PLAN_LABEL[plan]}: <b style="color:#cbd5e1">${seatLabel}</b>.</p>
+      <ol style="font-size:12.5px;color:#94a3b8;line-height:1.7;margin:8px 0 14px;padding-left:18px">
+        <li>Enter a teammate's email in the extension Team panel.</li>
+        <li>They receive a branded invite email (72-hour, single-use link).</li>
+        <li>They set a password — their account is created and ready instantly.</li>
+        <li>They sign in to the extension and see the same workspace you do.</li>
+      </ol>
+      <div class="app-btn-row"><button class="app-btn sm" id="invite">${icon('users')} Open Team panel in extension</button></div>
+      <div class="eligibility" style="margin-top:12px">Invites are sent securely from the Syndrax extension (it holds your team key). Sending invites directly from this page is coming in a later update.</div>
+    </div>
+  </div>`;
+  $('#invite').onclick = () => {
+    if (ext.installed && ext.id) window.open(`chrome-extension://${ext.id}/dashboard.html#team`, '_blank');
+    else { showAlert('Install the Syndrax extension to manage your team — it sends invites securely.', 'error'); window.open('https://chromewebstore.google.com/detail/mgapfpdkkihbeehfkgoajhealmgpnglo', '_blank'); }
+  };
 }
 
 function buildAuditInput() {
