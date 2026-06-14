@@ -166,6 +166,66 @@ export const TRUST_PHASES = {
       { label: 'Trusted', desc: 'boosted reach' },
     ],
   },
+  grailed: {
+    note: 'Grailed is community-driven and menswear-focused. Build rep with detailed listings, quick responses and fair pricing.',
+    phases: [
+      { label: 'Complete profile', desc: 'bio + photo + location' },
+      { label: 'First listings', desc: 'detailed + priced right' },
+      { label: 'First sale', desc: 'ship with tracking' },
+      { label: 'Ratings', desc: 'earn trust' },
+      { label: 'Trusted seller', desc: 'boosted visibility' },
+    ],
+  },
+  vinted: {
+    note: 'Vinted charges buyers, not sellers. List fast, price low, respond quickly — early rating velocity unlocks growth.',
+    phases: [
+      { label: 'Verify account', desc: 'email + ID' },
+      { label: 'First listings', desc: 'good photos + fair price' },
+      { label: 'First sale', desc: 'ship in 5 days' },
+      { label: 'Ratings', desc: '5-star average' },
+      { label: 'Trusted', desc: 'higher search rank' },
+    ],
+  },
+  whatnot: {
+    note: 'Whatnot is live-auction focused. Get approved as a seller, host your first show, build an audience.',
+    phases: [
+      { label: 'Apply as seller', desc: 'review + approval' },
+      { label: 'First show', desc: 'go live, small lot' },
+      { label: 'First sales', desc: 'ship fast' },
+      { label: 'Grow audience', desc: 'followers + repeat buyers' },
+      { label: 'Top seller', desc: 'featured + verified' },
+    ],
+  },
+  shopify: {
+    note: 'Shopify is your own store. Syndrax connects it for inventory sync and cross-listing. Set up your store, get your first organic orders.',
+    phases: [
+      { label: 'Store live', desc: 'domain + theme' },
+      { label: 'Product catalogue', desc: 'synced inventory' },
+      { label: 'First orders', desc: 'any channel' },
+      { label: 'Payment history', desc: 'clean processing' },
+      { label: 'Scale', desc: 'multi-channel' },
+    ],
+  },
+  facebook: {
+    note: 'Facebook Marketplace uses your personal profile — trust is tied to your account age and local reputation. Start local, build reviews.',
+    phases: [
+      { label: 'Profile ready', desc: 'photo + 30-day-old account' },
+      { label: 'First listings', desc: 'local items, low price' },
+      { label: 'First sale', desc: 'meet safe + rate' },
+      { label: 'Reviews', desc: 'build rating' },
+      { label: 'Trusted', desc: 'national listing unlocked' },
+    ],
+  },
+  amazon: {
+    note: 'Amazon is a sourcing platform in Syndrax — use it to research products, check price history and find winning ASINs to list on other channels.',
+    phases: [
+      { label: 'Enable sourcing', desc: 'connect your region' },
+      { label: 'Research mode', desc: 'ASIN lookup active' },
+      { label: 'Price tracking', desc: 'monitor ASINs' },
+      { label: 'Gold finder', desc: 'automated product discovery' },
+      { label: 'Full pipeline', desc: 'source → list on eBay/Etsy' },
+    ],
+  },
   walmart: {
     note: 'Walmart Marketplace is application-gated and metric-driven (≥90% on-time, low defect rate). Get approved, list, hit targets to scale.',
     phases: [

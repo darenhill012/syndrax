@@ -136,7 +136,30 @@ const WORKFLOW = [
     { key: 'messages', label: 'Message Tool', desc: '5 buyer templates • OOS • shipping • returns' },
   ]},
 ];
-const RUNNABLE = { lister: 'bulklister', research: 'research' }; // live web→extension run today
+// Scripts that dispatch to the extension today (auto-run via chrome.runtime.sendMessage).
+const RUNNABLE = { lister: 'bulklister', research: 'research' };
+
+// For modules not yet auto-dispatched: open the corresponding eBay Seller Hub URL
+// so the user can work there manually while automation is built. Keeps it real.
+const MODULE_EBAY_URL = {
+  dashboard:   'https://www.ebay.com/sh/overview',
+  quicksync:   'https://www.ebay.com/sh/prc/recent',
+  lifecycle:   'https://www.ebay.com/sh/inv/active',
+  finance:     'https://www.ebay.com/sh/fin',
+  compliance:  'https://www.ebay.com/sh/overview',
+  reverse:     'https://www.ebay.com/sh/src',
+  seller:      'https://www.ebay.com/sh/ovw/performance',
+  dna:         'https://www.ebay.com/sh/overview',
+  seo:         'https://www.ebay.com/sh/lst/active',
+  description: 'https://www.ebay.com/sh/lst/active',
+  images:      'https://www.ebay.com/sh/lst/active',
+  optimizer:   'https://www.ebay.com/sh/lst/active',
+  pricing:     'https://www.ebay.com/sh/prc/recent',
+  accounts:    'https://www.ebay.com/sh/ovw/performance',
+  warmup:      'https://www.ebay.com/sh/ovw/performance',
+  trust:       'https://www.ebay.com/sh/ovw/performance',
+  messages:    'https://www.ebay.com/sh/msg',
+};
 
 function loadAutomations() { try { return JSON.parse(localStorage.getItem('syndrax_automations_v1')) || []; } catch { return []; } }
 function saveAutomations() { try { localStorage.setItem('syndrax_automations_v1', JSON.stringify(automations)); } catch {} }
@@ -262,6 +285,18 @@ function devicePill() {
 
 function showAlert(msg, type = 'error') { const el = $('#appAlert'); if (el) { el.textContent = msg; el.className = 'auth-alert ' + type; } }
 
+function showToast(msg, type = 'info', duration = 4200) {
+  let box = document.getElementById('toastBox');
+  if (!box) { box = document.createElement('div'); box.id = 'toastBox'; document.body.appendChild(box); }
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  const icons = { success: '✓', error: '✕', info: 'ℹ' };
+  t.innerHTML = `<span class="toast-ico">${icons[type] || icons.info}</span><span>${esc(msg)}</span>`;
+  box.appendChild(t);
+  requestAnimationFrame(() => t.classList.add('in'));
+  setTimeout(() => { t.classList.remove('in'); setTimeout(() => t.remove(), 340); }, duration);
+}
+
 // ── tab router ────────────────────────────────────────────────────────────────
 function renderTab() {
   const t = TABS.find(x => x.id === activeTab);
@@ -378,13 +413,17 @@ function renderHome() {
     </div>
 
     <div class="panel">
-      <div class="panel-h">Connected accounts <span class="link" data-go="accounts">manage →</span></div>
+      <div class="panel-h">
+        Connected accounts <span class="link" data-go="accounts">manage →</span>
+        ${accounts.some(a => a.marketplace === 'ebay') ? `<button class="app-btn sm" id="homeSyncBtn" style="margin-left:auto">${icon('refresh')} Sync eBay</button>` : ''}
+      </div>
       <div class="acct-strip">${accountsStrip()}</div>
     </div>`;
 
   content.querySelectorAll('[data-connect]').forEach(b => b.onclick = () => { connecting = b.dataset.connect; openConnectModal(); });
   content.querySelectorAll('[data-go]').forEach(b => b.onclick = () => { activeTab = b.dataset.go; renderShell(); });
   content.querySelectorAll('[data-setup]').forEach(b => b.onclick = () => { location.href = '/onboarding'; });
+  const hs = $('#homeSyncBtn', content); if (hs) hs.onclick = openSyncModal;
 }
 
 // ── WORKSPACE ─────────────────────────────────────────────────────────────────
@@ -406,9 +445,11 @@ function renderWorkspace() {
       <div class="wf-stage-h">${icon(st.icon)} <span>${st.stage}</span></div>
       <div class="script-grid">
         ${st.modules.map(m => {
-          const runnable = live && !!RUNNABLE[m.run];
-          return `<button class="script-card ${live ? 'ready' : 'soon'}" data-mod="${m.key}" title="${esc(m.label)} → ${esc(mkName)}">
-            <span class="sc-name">${esc(m.label)}${runnable ? '<span class="sc-live">live</span>' : ''}</span>
+          const autoDispatch = live && !!RUNNABLE[m.run];
+          const ebayOpen = live && !!MODULE_EBAY_URL[m.key];
+          const cardClass = autoDispatch ? 'ready' : (live && ebayOpen) ? 'ready' : 'soon';
+          return `<button class="script-card ${cardClass}" data-mod="${m.key}" title="${esc(m.label)} → ${esc(mkName)}">
+            <span class="sc-name">${esc(m.label)}${autoDispatch ? '<span class="sc-live">live</span>' : (ebayOpen ? '<span class="sc-live" style="background:rgba(99,102,241,.16);color:#a5b4fc;border-color:rgba(99,102,241,.3)">hub</span>' : '')}</span>
             <span class="sc-desc">${esc(m.desc)}</span>
           </button>`;
         }).join('')}
@@ -465,20 +506,27 @@ function openModuleModal(key) {
   const mod = WORKFLOW.flatMap(s => s.modules).find(m => m.key === key); if (!mod) return;
   const mk = wsTarget ? wsTarget.marketplace : 'ebay';
   const mkName = marketplace(mk)?.name || mk;
-  const runnable = LIVE_MARKETPLACES.includes(mk) && !!RUNNABLE[mod.run];
+  const isEbay = mk === 'ebay';
+  const autoDispatch = LIVE_MARKETPLACES.includes(mk) && !!RUNNABLE[mod.run];
+  const ebayUrl = MODULE_EBAY_URL[key];
   const host = document.createElement('div');
   host.className = 'modal-bg';
   host.innerHTML = `
     <div class="modal" onclick="event.stopPropagation()">
       <h3>${esc(mod.label)} → ${esc(mkName)}</h3>
       <p class="modal-sub">${esc(mod.desc)}. Target: <b style="color:#cbd5e1">${esc(wsTarget?.label || 'your account')}</b>.</p>
-      ${runnable
+      ${autoDispatch
         ? `<button class="app-btn" id="mRun" style="width:100%">${icon('play')} Run now on This PC</button>`
-        : `<div class="eligibility" style="margin:0 0 4px">${esc(mkName)} runner for ${esc(mod.label)} is being wired — schedule it now and it runs as soon as it ships.</div>`}
+        : isEbay && ebayUrl
+          ? `<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:2px">
+              <button class="app-btn ghost" id="mOpen" style="flex:1">${icon('upload')} Open in eBay Seller Hub</button>
+             </div>
+             <div class="eligibility" style="margin-top:8px">Auto-dispatch for <b>${esc(mod.label)}</b> is being wired into the extension — scheduled automations will activate when it ships.</div>`
+          : `<div class="eligibility" style="margin:0 0 4px">${esc(mkName)} runner for ${esc(mod.label)} is building — schedule it now and it auto-runs when it ships.</div>`}
       <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:14px">
         <label>Schedule (repeat)</label>
         <select id="mInt"><option>Every hour</option><option selected>Every 6 hours</option><option>Daily</option><option>Every 3 days</option><option>Weekly</option></select>
-        <label style="display:flex;align-items:center;gap:8px;margin-top:12px;text-transform:none;letter-spacing:0;font-size:13px;color:#cbd5e1"><input type="checkbox" id="mAudit" checked style="width:auto;accent-color:#22d3ee"> Run the audit agent first (recommended — keeps the account human & safe)</label>
+        <label style="display:flex;align-items:center;gap:8px;margin-top:12px;text-transform:none;letter-spacing:0;font-size:13px;color:#cbd5e1"><input type="checkbox" id="mAudit" checked style="width:auto;accent-color:#22d3ee"> Run the audit agent first (keeps the account human &amp; safe)</label>
         <label>Rule (optional)</label>
         <input id="mRule" placeholder="e.g. only when trust score > 90, max 30 listings/day">
         <div class="app-btn-row" style="margin-top:14px">
@@ -496,6 +544,8 @@ function openModuleModal(key) {
     if (mod.run === 'lister') { configuring = 'bulklister'; openScriptModal(); }
     else dispatch(mod.run || mod.key, mod.label, {});
   };
+  const openBtn = $('#mOpen', host);
+  if (openBtn) openBtn.onclick = () => { window.open(ebayUrl, '_blank'); host.remove(); };
   $('#mSave', host).onclick = () => {
     automations.unshift({
       id: 'auto-' + Date.now().toString(36), key: mod.key, label: mod.label,
@@ -503,7 +553,7 @@ function openModuleModal(key) {
       auditAgent: $('#mAudit', host).checked, rule: $('#mRule', host).value.trim(), createdAt: Date.now(),
     });
     saveAutomations(); host.remove(); renderWorkspace();
-    showAlert(`Automation saved — ${mod.label} will run on schedule with the audit agent.`, 'success');
+    showToast(`Automation saved — ${mod.label} runs on schedule with the audit agent.`, 'success');
   };
 }
 
@@ -631,13 +681,18 @@ function renderAccounts() {
     </div>` : ''}
     <p style="color:#94a3b8;font-size:13px;margin-bottom:14px">Connect the marketplaces you sell on. The extension keeps each account on its own device/IP. ${isUnlimited(limit) ? 'Unlimited accounts.' : `Up to <b style="color:#cbd5e1">${limit}</b> account${limit === 1 ? '' : 's'} per marketplace on ${PLAN_LABEL[plan]}.`}</p>
     <div class="mk-grid big">${MARKETPLACES.map(m => acctTile(m, counts[m.id] || 0, limit)).join('')}</div>
-    ${accounts.length ? `<h3 style="font:700 14px var(--nav-font);color:#f1f5f9;margin:26px 0 4px">Account trust & warm-up</h3>
-      <p style="color:#94a3b8;font-size:12.5px;margin-bottom:14px">Each marketplace bans new accounts differently — Syndrax warms each one up to its own rules, then an audit gate unlocks growth scripts. Established accounts skip warm-up.</p>
+    ${accounts.length ? `
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin:26px 0 4px">
+        <h3 style="font:700 14px var(--nav-font);color:#f1f5f9;margin:0">Account trust &amp; warm-up</h3>
+        ${accounts.some(a => a.marketplace === 'ebay') ? `<button class="app-btn sm" id="ebaySync">${icon('refresh')} Sync eBay now</button>` : ''}
+      </div>
+      <p style="color:#94a3b8;font-size:12.5px;margin-bottom:14px">Each marketplace warms up at its own pace — Syndrax tracks each phase and unlocks growth scripts when the audit gate passes. Established accounts skip warm-up.</p>
       ${accounts.map(trustCard).join('')}` : ''}`;
 
   $('#content').querySelectorAll('[data-connect]').forEach(b => b.onclick = () => { connecting = b.dataset.connect; openConnectModal(); });
   $('#content').querySelectorAll('[data-up]').forEach(b => b.onclick = () => startCheckout(b.dataset.up).catch(e => showAlert(e.message)));
   $('#content').querySelectorAll('[data-est]').forEach(b => b.onclick = () => { toggleEstablished(b.dataset.est); });
+  const es = $('#ebaySync'); if (es) es.onclick = openSyncModal;
 }
 
 function acctTile(m, n, limit) {
@@ -658,35 +713,190 @@ function acctTile(m, n, limit) {
 function openConnectModal() {
   const m = marketplace(connecting); if (!m) return;
   const elig = m.access === 'gated' ? eligibility(m.id, { ein: profile.ein }) : null;
+  const isSource = m.access === 'source';
+  const isGated  = m.access === 'gated';
+  const isLive   = m.status === 'live';
+  const logo = marketplaceLogo(m.id) || `<span style="font:800 22px var(--nav-font);color:#fff">${m.name[0]}</span>`;
+  const j = trustJourney(m.id);
+
+  // Mini trust phase stepper shown in the modal
+  const miniSteps = j.phases.map((p, i) => `
+    <div class="ctrust-step">
+      <div class="ctrust-dot">${i + 1}</div>
+      <div class="ctrust-info"><div class="ctrust-label">${esc(p.label)}</div><div class="ctrust-desc">${esc(p.desc)}</div></div>
+    </div>`).join('<div class="ctrust-line"></div>');
+
   const host = document.createElement('div');
   host.className = 'modal-bg';
   host.innerHTML = `
-    <div class="modal" onclick="event.stopPropagation()">
-      <h3><span class="mk-chip neutral" style="width:34px;height:34px;display:inline-flex;vertical-align:middle;margin-right:8px">${marketplaceLogo(m.id) || m.name[0]}</span> Connect ${esc(m.name)}</h3>
-      ${elig && elig.status !== 'eligible' ? `<div class="eligibility" style="margin:12px 0">${esc(elig.message)}</div>`
-        : `<p class="modal-sub">Add the account you sell on. Sign in to ${esc(m.name)} on this device and the extension drives it safely on your IP.</p>`}
-      <label>Account name / username</label>
-      <input id="cLabel" placeholder="e.g. my-store-name">
-      <label>Store URL (optional)</label>
-      <input id="cUrl" placeholder="https://${m.id}.com/usr/your-store">
-      <div class="app-btn-row" style="margin-top:18px">
-        <button class="app-btn" id="cAdd">Connect account</button>
-        <button class="app-btn ghost" id="cCancel">Cancel</button>
+    <div class="modal wide" onclick="event.stopPropagation()" style="padding:0;overflow:hidden">
+      <div class="modal-mk-header" style="background:linear-gradient(135deg,${m.color}33 0%,${m.color}11 60%,transparent 100%);border-bottom:1px solid ${m.color}33;padding:20px 24px 16px;display:flex;align-items:center;gap:14px">
+        <span class="mk-chip neutral" style="width:46px;height:46px;flex-shrink:0;border:1.5px solid ${m.color}55">${logo}</span>
+        <div>
+          <div style="font:800 16px var(--nav-font);color:#f1f5f9">${isSource ? 'Enable' : 'Connect'} ${esc(m.name)}</div>
+          <div style="font-size:12px;color:#64748b;margin-top:2px">${isSource ? 'Source / research mode' : isGated ? 'Requires approval' : isLive ? 'Automations live' : 'Automation building'}</div>
+        </div>
+        <span class="mk-badge ${m.status === 'live' ? 'live' : m.status === 'beta' ? 'beta' : 'soon'}" style="margin-left:auto">${m.status === 'live' ? 'Live' : m.status === 'beta' ? 'Beta' : 'Soon'}</span>
+      </div>
+      <div style="padding:20px 24px">
+
+      ${isSource ? `
+        <p class="modal-sub">${esc(m.name)} is your <b style="color:#cbd5e1">sourcing engine</b> — Syndrax reads it for product data, price history and winning ASINs to list on eBay, Etsy and others. Not a sell channel.</p>
+        <label>Amazon region</label>
+        <select id="cRegion"><option value="US">United States (amazon.com)</option><option value="UK">UK (amazon.co.uk)</option><option value="CA">Canada (amazon.ca)</option><option value="DE">Germany (amazon.de)</option></select>
+        <label>Associate tag (optional)</label>
+        <input id="cLabel" placeholder="yourtag-20 (for affiliate links)">
+        <div class="app-btn-row" style="margin-top:18px">
+          <button class="app-btn" id="cAdd">Enable ${esc(m.name)} sourcing</button>
+          <button class="app-btn ghost" id="cCancel">Cancel</button>
+        </div>
+      ` : isGated ? `
+        ${elig ? `<div class="eligibility" style="margin:0 0 16px">${esc(elig.message)}</div>` : ''}
+        <label>Business EIN <span style="color:#fca5a5">(required for approval)</span></label>
+        <input id="cEin" placeholder="12-3456789" value="${esc(profile.ein || '')}">
+        <label>Account name / username</label>
+        <input id="cLabel" placeholder="e.g. my-brand-store">
+        <div class="ctrust" style="margin-top:16px">${miniSteps}</div>
+        <div class="app-btn-row" style="margin-top:18px">
+          <button class="app-btn" id="cAdd">Start approval journey</button>
+          <button class="app-btn ghost" id="cCancel">Cancel</button>
+        </div>
+      ` : `
+        <p class="modal-sub">${isLive
+          ? `Sign in to ${esc(m.name)} on this device — the extension runs scripts safely on your IP. eBay accounts sync automatically from the extension.`
+          : `Add your ${esc(m.name)} account now. ${esc(m.name)} automation is being built — you'll be notified when scripts go live. Trust journey starts immediately.`}</p>
+        <label>Username / store name</label>
+        <input id="cLabel" placeholder="e.g. my-store-name">
+        <label>Store URL (optional)</label>
+        <input id="cUrl" placeholder="https://${m.id === 'facebook' ? 'facebook.com/marketplace' : m.id + '.com'}/your-store">
+        <div class="ctrust" style="margin-top:16px">${miniSteps}</div>
+        <div class="app-btn-row" style="margin-top:18px">
+          <button class="app-btn" id="cAdd">${isLive ? icon('wifi') + ' Connect & sync' : icon('plus') + ' Connect account'}</button>
+          <button class="app-btn ghost" id="cCancel">Cancel</button>
+        </div>
+      `}
       </div>
     </div>`;
+
   host.onclick = () => host.remove();
   document.body.appendChild(host);
   $('#cCancel', host).onclick = () => host.remove();
   $('#cAdd', host).onclick = async () => {
-    const label = $('#cLabel', host).value.trim() || m.name;
-    const url = $('#cUrl', host).value.trim();
-    $('#cAdd', host).disabled = true; $('#cAdd', host).textContent = 'Connecting…';
+    const btn = $('#cAdd', host);
+    const label = ($('#cLabel', host)?.value.trim()) || m.name;
+    const url   = ($('#cUrl',   host)?.value.trim()) || '';
+    const ein   = ($('#cEin',   host)?.value.trim()) || '';
+    const region = ($('#cRegion', host)?.value) || 'US';
+    btn.disabled = true; btn.textContent = 'Connecting…';
     try {
-      await addMarketplaceAccount({ marketplace: m.id, label, deviceId: 'this-device', url });
-      const mk = await getMarketplaces(); accounts = mk.accounts || [];
-      host.remove(); renderAccounts(); showAlert(`${m.name} account connected.`, 'success');
-    } catch (e) { showAlert(e.message || 'Could not connect.'); host.remove(); }
+      const meta = isGated ? { ein } : isSource ? { region } : {};
+      await addMarketplaceAccount({ marketplace: m.id, label, deviceId: 'this-device', url, ...meta });
+      if (ein && isGated) { try { await saveProfile({ ein }); profile.ein = ein; } catch {} }
+      const mk2 = await getMarketplaces(); accounts = mk2.accounts || [];
+      host.remove();
+      renderAccounts();
+      if (isLive && ext.installed) {
+        showToast(`${m.name} connected — starting sync…`, 'success');
+        openSyncModal();
+      } else if (isSource) {
+        showToast(`${m.name} sourcing enabled.`, 'success');
+      } else if (isGated) {
+        showToast(`${m.name} application started — we'll guide you through approval.`, 'success');
+      } else {
+        showToast(`${m.name} connected. Automation ships soon — trust journey started.`, 'success');
+      }
+    } catch (e) { btn.disabled = false; btn.textContent = 'Try again'; showAlert(e.message || 'Could not connect.'); }
   };
+}
+
+// ── Full Sync (eBay compound sync: trust → inventory → finance → dashboard) ────
+// Dispatches SYNDRAX_FULL_SYNC to the extension, which chains 4 scan phases and
+// emits SYNDRAX_SYNC_PROGRESS events back to any open /app tab. The web side
+// shows a live progress bar modal and refreshes the home chart when done.
+function openSyncModal() {
+  if (!ext.installed) {
+    showAlert('Install the Syndrax extension on this device to run a sync.', 'error'); return;
+  }
+  const host = document.createElement('div');
+  host.className = 'modal-bg';
+  const phases = [
+    { id: 'trust',     label: 'Trust scan',      icon: icon('shield') },
+    { id: 'inventory', label: 'Inventory',        icon: icon('package') },
+    { id: 'finance',   label: 'P&L / Finance',   icon: icon('cash') },
+    { id: 'dashboard', label: 'Dashboard data',  icon: icon('chart') },
+  ];
+  let currentPhase = 'trust', pct = 0;
+
+  function renderModal() {
+    host.innerHTML = `
+      <div class="modal" onclick="event.stopPropagation()" style="max-width:460px">
+        <h3>${icon('refresh')} Syncing eBay account</h3>
+        <p class="modal-sub" style="margin-bottom:20px">Pulling trust score, live inventory, P&L and dashboard data from your eBay Seller Hub. Runs on this device.</p>
+        <div class="sync-phases">${phases.map(p => `
+          <div class="sync-phase ${p.id === currentPhase ? 'active' : pct >= phaseTarget(p.id) ? 'done' : ''}">
+            <span class="sp-ico">${p.icon}</span>
+            <span class="sp-lbl">${p.label}</span>
+            ${pct >= phaseTarget(p.id) ? '<span class="sp-done">✓</span>' : ''}
+          </div>`).join('')}
+        </div>
+        <div class="sync-bar-wrap" style="margin-top:16px">
+          <div class="sync-bar"><div class="sync-fill" id="syncFill" style="width:${pct}%"></div></div>
+          <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:11px;color:#64748b">
+            <span id="syncDetail">Starting…</span>
+            <span id="syncPct">${pct}%</span>
+          </div>
+        </div>
+        <div class="app-btn-row" style="margin-top:18px">
+          <button class="app-btn ghost sm" id="syncCancel">Cancel</button>
+        </div>
+      </div>`;
+    $('#syncCancel', host).onclick = () => host.remove();
+  }
+
+  function phaseTarget(id) { return { trust: 25, inventory: 50, finance: 75, dashboard: 100 }[id] || 100; }
+
+  function updateProgress(phase, p, detail) {
+    currentPhase = phase; pct = p;
+    const fill = $('#syncFill', host); if (fill) fill.style.width = p + '%';
+    const pctEl = $('#syncPct', host); if (pctEl) pctEl.textContent = p + '%';
+    const det = $('#syncDetail', host); if (det) det.textContent = detail || '';
+    // Re-render phase chips
+    host.querySelectorAll('.sync-phase').forEach(el => {
+      const pid = el.querySelector('.sp-ico') ? phases.find(ph => el.querySelector('.sp-lbl')?.textContent === ph.label)?.id : null;
+      if (!pid) return;
+      el.className = `sync-phase ${pid === phase ? 'active' : pct >= phaseTarget(pid) ? 'done' : ''}`;
+    });
+  }
+
+  renderModal();
+  host.onclick = (e) => { if (e.target === host) host.remove(); };
+  document.body.appendChild(host);
+
+  // Listen for progress events from extension
+  const onMsg = (msg) => {
+    if (msg.type !== 'SYNDRAX_SYNC_PROGRESS') return;
+    updateProgress(msg.phase, msg.pct || 0, msg.detail || '');
+    if (msg.phase === 'complete' || msg.pct >= 100) {
+      setTimeout(() => { host.remove(); showToast('eBay sync complete — dashboard updated.', 'success'); renderHome(); }, 1400);
+      chrome.runtime.onMessage.removeListener(onMsg);
+    }
+  };
+  if (window.chrome && chrome.runtime && chrome.runtime.onMessage) {
+    chrome.runtime.onMessage.addListener(onMsg);
+  }
+
+  // Dispatch SYNDRAX_FULL_SYNC to the extension
+  const extId = ext.id || EXT_IDS[0];
+  if (window.chrome && chrome.runtime && chrome.runtime.sendMessage) {
+    chrome.runtime.sendMessage(extId, { type: 'SYNDRAX_FULL_SYNC', marketplace: 'ebay' }, (resp) => {
+      if (chrome.runtime.lastError || !resp || !resp.ok) {
+        host.remove();
+        // If extension doesn't support FULL_SYNC yet, open eBay Seller Hub as fallback
+        window.open('https://www.ebay.com/sh/overview', '_blank');
+        showToast('Opening eBay Seller Hub — full sync wiring in progress.', 'info');
+      }
+    });
+  }
 }
 
 // ── Trust / warm-up per connected account (marketplace-specific) ──────────────
