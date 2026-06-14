@@ -7,7 +7,7 @@
     'olhecndljgbocfkdejkcppadadmfiojo', // dev / keyed / unpacked (stable)
     'mgapfpdkkihbeehfkgoajhealmgpnglo', // Chrome Web Store
   ];
-  var LATEST_VERSION = '1.1.0'; // bump on each extension release
+  var LATEST_VERSION = '1.1.1'; // bump on each extension release
   var STORE_URL = 'https://chromewebstore.google.com/detail/mgapfpdkkihbeehfkgoajhealmgpnglo';
 
   function ping(id) {
