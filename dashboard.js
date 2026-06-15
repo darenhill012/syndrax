@@ -90,7 +90,9 @@ let inventorySummary = null; // inventory counts + cross-site ASIN reference
 let homeChartView = 'sales'; // 'sales' | 'inventory' — Home chart toggle
 let invItems = []; // loaded inventory rows (filtered client-side)
 let invFilter = { marketplace: 'all', stock: 'all', q: '' }; // inventory sheet filters
-let trackingBalance = null; // { credits, configured, claims, allotment }
+let trackingBalance = null; // { credits, configured, claims, allotment, packs, subs }
+let trackingOrders = []; // last-loaded tracking orders (for in-tab re-paints)
+let trackingBuyMode = 'once'; // 'once' | 'monthly' for credit top-up
 let thisPcIp = ''; // public IP of this PC (from the extension)
 let currentDeviceId = 'this-device'; // the device this browser's extension runs on
 let lastConnectNode = localStorage.getItem('syndrax_last_node') || ''; // remembered node pick
@@ -1328,6 +1330,7 @@ async function renderTracking() {
   let orders = [];
   try { trackingBalance = await getTrackingBalance(); } catch { trackingBalance = { credits: 0, configured: false, claims: [], allotment: 0 }; }
   try { const r = await getTrackingOrders(); orders = r.orders || []; } catch { orders = []; }
+  trackingOrders = orders;
   paintTracking(content, orders);
 }
 
@@ -1373,12 +1376,22 @@ function paintTracking(content, orders) {
   // top-up prompt. It only appears when they're actually running low.
   const lowCredits = bal.configured && bal.credits <= 10;
   const packs = bal.packs || [];
+  const subs = bal.subs || [];
+  const hasAuto = subs.length > 0;
+  // For each pack, only allow the monthly toggle if its matching sub is configured.
+  const monthlyAvail = (packId) => subs.some(s => s.id === packId.replace('pack_', 'sub_'));
+  const modeOn = trackingBuyMode === 'monthly';
   const topUp = (lowCredits && packs.length) ? `
     <div class="wf-note" style="margin-bottom:16px;${bal.credits === 0 ? 'color:#fca5a5;border-color:rgba(248,113,113,.3);background:rgba(248,113,113,.06)' : ''}">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
         <span>${bal.credits === 0 ? 'Your tracking allowance is used up for this month.' : `Tracking allowance running low (${bal.credits} left).`} Top up to keep auto-pushing tracking — no interruption to fulfillment.</span>
-        <span style="display:flex;gap:8px">${packs.map(p => `<button class="app-btn sm" data-buycredits="${esc(p.id)}">${esc(p.label)}</button>`).join('')}</span>
+        ${hasAuto ? `<div class="chart-toggle"><button class="${!modeOn ? 'on' : ''}" data-buymode="once">One-time</button><button class="${modeOn ? 'on' : ''}" data-buymode="monthly">Auto-renew</button></div>` : ''}
       </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">${packs.map(p => {
+        const monthly = modeOn && monthlyAvail(p.id);
+        return `<button class="app-btn sm${monthly ? '' : ' ghost'}" data-buycredits="${esc(p.id)}" ${modeOn && !monthlyAvail(p.id) ? 'disabled title="No auto-renew for this tier"' : ''}>${esc(p.label)}${monthly ? ' / mo' : ''}</button>`;
+      }).join('')}</div>
+      ${modeOn ? '<div style="font-size:11px;color:#94a3b8;margin-top:6px">Auto-renew tops up these credits every month — cancel anytime in billing.</div>' : ''}
     </div>` : '';
 
   content.innerHTML = `
@@ -1398,9 +1411,10 @@ function paintTracking(content, orders) {
 
   content.querySelectorAll('[data-claim]').forEach(b => b.onclick = () => claimForOrder(orders.find(o => String(o.id) === b.dataset.claim), content));
   content.querySelectorAll('[data-push]').forEach(b => b.onclick = () => pushTrackingToMarketplace(orders.find(o => String(o.id) === b.dataset.push), content));
+  content.querySelectorAll('[data-buymode]').forEach(b => b.onclick = () => { trackingBuyMode = b.dataset.buymode; paintTracking(content, trackingOrders); });
   content.querySelectorAll('[data-buycredits]').forEach(b => b.onclick = async () => {
     b.disabled = true; b.textContent = 'Opening checkout…';
-    try { const r = await trackingCheckout(b.dataset.buycredits); if (r && r.url) location.href = r.url; else { b.disabled = false; showAlert('Could not open checkout.'); } }
+    try { const r = await trackingCheckout(b.dataset.buycredits, trackingBuyMode); if (r && r.url) location.href = r.url; else { b.disabled = false; showAlert('Could not open checkout.'); } }
     catch (e) { b.disabled = false; showAlert(e.message || 'Could not open checkout.'); }
   });
 }

@@ -252,8 +252,8 @@ export async function claimTracking(payload) {
   // No offline fallback — claiming spends a real credit and must hit the server.
   return await api('/api/tracking/claim', { method: 'POST', body: JSON.stringify(payload) });
 }
-export async function trackingCheckout(pack) {
-  return await api('/api/tracking/checkout', { method: 'POST', body: JSON.stringify({ pack }) });
+export async function trackingCheckout(pack, mode = 'once') {
+  return await api('/api/tracking/checkout', { method: 'POST', body: JSON.stringify({ pack, mode }) });
 }
 
 window.SyndraxApp = {
